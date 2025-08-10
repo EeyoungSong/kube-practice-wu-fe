@@ -219,7 +219,6 @@ export default function CreateNotePage() {
         selectedLanguage={selectedLanguage}
         setSelectedLanguage={setSelectedLanguage}
         languages={languages}
-        showAddButton={false}
       />
 
       <main className="container mx-auto px-4 py-12">

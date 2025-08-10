@@ -173,56 +173,65 @@ export default function NotesPage() {
         <div className="max-w-6xl mx-auto">
           {/* Filters */}
           <div className="mb-8">
-            <div className="flex flex-row justify-start  gap-6">
-              <div className="space-y-2">
-                <Select
-                  value={selectedCategory}
-                  onValueChange={setSelectedCategory}
-                  disabled={categoriesLoading}
-                  defaultValue="전체 카테고리"
-                >
-                  <SelectTrigger className="w-40 bg-gray-800 border-gray-600 text-white focus:ring-0 focus:ring-offset-0">
-                    <SelectValue
-                      placeholder={
-                        categoriesLoading
-                          ? "카테고리 로딩 중..."
-                          : "카테고리 선택"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-600">
-                    {categoriesData && (
-                      <>
-                        <SelectItem
-                          value="전체 카테고리"
-                          className="text-white hover:bg-gray-700"
-                        >
-                          전체 카테고리
-                        </SelectItem>
-                        {categoriesData.map((category: Category) => (
+            <div className="flex flex-row justify-between gap-6">
+              <div className="flex flex-row w-1/2">
+                <div className="space-x-2 mx-2">
+                  <Select
+                    value={selectedCategory}
+                    onValueChange={setSelectedCategory}
+                    disabled={categoriesLoading}
+                    defaultValue="전체 카테고리"
+                  >
+                    <SelectTrigger className="w-40 bg-gray-800 text-white focus:ring-0 focus:ring-offset-0 border-none">
+                      <SelectValue
+                        placeholder={
+                          categoriesLoading
+                            ? "카테고리 로딩 중..."
+                            : "카테고리 선택"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-none">
+                      {categoriesData && (
+                        <>
                           <SelectItem
-                            key={category.id}
-                            value={category.name}
+                            value="전체 카테고리"
                             className="text-white hover:bg-gray-700"
                           >
-                            {category.name}
+                            전체 카테고리
                           </SelectItem>
-                        ))}
-                      </>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2 w-1/3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    placeholder="노트 이름으로 검색..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-gray-800 border-gray-600 text-white placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0"
-                  />
+                          {categoriesData.map((category: Category) => (
+                            <SelectItem
+                              key={category.id}
+                              value={category.name}
+                              className="text-white hover:bg-gray-700"
+                            >
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
+                <div className="space-x-2 gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      placeholder="노트 이름으로 검색..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 bg-gray-800 border-none text-white placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Link href="/add">
+                  <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                    <Plus className="w-4 h-4 mr-2" />새 노트 만들기
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

@@ -29,14 +29,12 @@ interface HeaderProps {
   selectedLanguage: string;
   setSelectedLanguage: (language: string) => void;
   languages: Language[];
-  showAddButton?: boolean;
 }
 
 export default function Header({
   selectedLanguage,
   setSelectedLanguage,
   languages,
-  showAddButton = true,
 }: HeaderProps) {
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -86,13 +84,6 @@ export default function Header({
             {user ? (
               // 로그인된 사용자용 UI
               <>
-                {showAddButton && (
-                  <Link href="/add">
-                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                      <Plus className="w-4 h-4 mr-2" />새 노트 만들기
-                    </Button>
-                  </Link>
-                )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button className="bg-transparent text-white hover:bg-gray-700 hover:border-none border-none">
