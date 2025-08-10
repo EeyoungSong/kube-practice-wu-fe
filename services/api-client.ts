@@ -1,5 +1,4 @@
 import { ApiOptions } from "@/types/api";
-import { authService } from "./auth.service";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1";
@@ -18,20 +17,9 @@ export class APIError extends Error {
 
 export class ApiClient {
   private baseURL: string;
-  private isRefreshing = false;
-  private refreshSubscribers: Array<(token: string) => void> = [];
 
   constructor(baseURL: string = API_BASE_URL) {
     this.baseURL = baseURL;
-  }
-
-  private async getAuthToken(): Promise<string | null> {
-    if (typeof window !== "undefined") {
-      // Check if we need to use authService for token validation
-      const token = await authService.getValidToken();
-      return token;
-    }
-    return null;
   }
 
   private async buildHeaders(options: ApiOptions): Promise<HeadersInit> {
@@ -48,11 +36,14 @@ export class ApiClient {
       headers["Content-Type"] = "application/json";
     }
 
-    // 인증이 필요한 경우 토큰 추가
-    if (options.requireAuth) {
-      const token = await this.getAuthToken();
+    // ✅ Access token을 localStorage에서 가져와서 Authorization 헤더에 추가
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
+        console.log("🔑 Adding Authorization header with access token");
+      } else {
+        console.log("🔑 No access token found in localStorage");
       }
     }
 
@@ -69,6 +60,8 @@ export class ApiClient {
     const config: RequestInit = {
       method,
       headers: await this.buildHeaders(options),
+      // ✅ 쿠키 포함 (refresh token용)
+      credentials: "include",
     };
 
     // body가 있는 경우 추가
@@ -80,21 +73,58 @@ export class ApiClient {
       }
     }
 
+    // 🔍 디버깅: 요청 로그
+    console.log(`🌐 API Request: ${method} ${this.baseURL}${endpoint}`);
+    console.log(`🔑 Headers:`, config.headers);
+
     try {
       const response = await fetch(`${this.baseURL}${endpoint}`, config);
       const responseText = await response.text();
 
-      // Handle 401 Unauthorized - Token might be expired
-      if (response.status === 401 && !isRetry && options.requireAuth) {
-        try {
-          // Try to refresh the token
-          await authService.refreshAccessToken();
+      console.log(`📡 Response Status: ${response.status} for ${endpoint}`);
 
-          // Retry the request with the new token
-          return this.request<T>(endpoint, options, true);
+      // ✅ Handle 401 Unauthorized - access token이 만료되었거나 무효함
+      if (response.status === 401 && !isRetry) {
+        try {
+          console.log("🔄 Got 401, attempting to refresh access token...");
+
+          // ✅ HTTP-only 쿠키의 refresh token을 사용하여 새 access token 발급
+          const refreshResponse = await fetch(
+            `${this.baseURL}/accounts/token/refresh/`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include", // refresh token 쿠키 포함
+            }
+          );
+
+          if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            if (refreshData.access) {
+              // ✅ 새 access token을 localStorage에 저장
+              localStorage.setItem("token", refreshData.access);
+              console.log(
+                "✅ New access token saved, retrying original request"
+              );
+
+              // 원래 요청 재시도
+              return this.request<T>(endpoint, options, true);
+            }
+          }
+
+          throw new Error("Failed to refresh access token");
         } catch (refreshError) {
-          // If refresh fails, throw the original error
-          console.error("Token refresh failed:", refreshError);
+          console.error("❌ Token refresh failed:", refreshError);
+          // access token과 사용자 정보 클리어
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+
+          // 로그인 페이지로 리다이렉트 (선택적)
+          if (typeof window !== "undefined") {
+            window.location.href = "/auth/login";
+          }
         }
       }
 
@@ -113,14 +143,20 @@ export class ApiClient {
           // JSON 파싱 실패 시 기본 메시지 사용
         }
 
+        console.error(`❌ API Error: ${errorMessage}`, {
+          responseText,
+          status: response.status,
+        });
         throw new APIError(errorMessage, response.status, errorDetail);
       }
 
       // 빈 응답 처리 (204 No Content 등)
       if (!responseText || !responseText.trim()) {
+        console.log(`✅ Empty response for ${endpoint}`);
         return {} as T;
       }
 
+      console.log(`✅ Success response for ${endpoint}`);
       return JSON.parse(responseText);
     } catch (error) {
       if (error instanceof APIError) {
@@ -128,9 +164,11 @@ export class ApiClient {
       }
 
       if (error instanceof Error) {
+        console.error(`❌ Network Error:`, error.message);
         throw new APIError(error.message);
       }
 
+      console.error(`❌ Unknown Error:`, error);
       throw new APIError("알 수 없는 오류가 발생했습니다.");
     }
   }

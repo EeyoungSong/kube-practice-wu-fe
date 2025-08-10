@@ -153,3 +153,34 @@ export interface WordHistory {
     timestamp: string;
   }>;
 }
+
+// Review types
+export interface ReviewWord {
+  id: string;
+  word: string;
+  meaning: string;
+  context: string;
+}
+
+export interface ReviewData {
+  words: ReviewWord[];
+  total_count: number;
+}
+
+export interface ReviewResult {
+  word_id: string;
+  is_known: boolean; // 사용자가 '알고 있음'/'모름'을 선택
+}
+
+export interface ReviewSubmission {
+  wordbook_id: number;
+  results: ReviewResult[];
+}
+
+export interface ReviewResponse {
+  success: boolean;
+  message: string;
+  total_score: number;
+  known_count: number;
+  total_count: number;
+}

@@ -4,21 +4,29 @@ import {
   SignupRequest,
   AuthResponse,
   User,
-  TokenRefreshRequest,
   TokenRefreshResponse,
 } from "@/types/api";
 
 class AuthService {
-  private refreshPromise: Promise<string> | null = null;
-
   async login(email: string, password: string): Promise<AuthResponse> {
+    console.log("🔐 Attempting login for:", email);
+
     const response = await apiClient.post<AuthResponse>("/accounts/login/", {
       email,
       password,
     } as LoginRequest);
 
-    // 토큰 저장
-    this.saveTokens(response.access, response.refresh);
+    console.log("🔐 Login response:", response);
+
+    // ✅ Access token은 localStorage에 저장 (Authorization 헤더용)
+    if (response.access) {
+      localStorage.setItem("token", response.access);
+      console.log("💾 Access token saved to localStorage");
+    }
+
+    // ✅ Refresh token은 서버가 HTTP-only 쿠키로 설정
+    console.log("🍪 Refresh token should be set as HTTP-only cookie by server");
+    console.log("🍪 Current cookies:", document.cookie);
 
     return response;
   }
@@ -28,133 +36,97 @@ class AuthService {
     email: string,
     password: string
   ): Promise<AuthResponse> {
+    console.log("📝 Attempting signup for:", email);
+
     const response = await apiClient.post<AuthResponse>("/accounts/signup/", {
       username,
       email,
       password,
     } as SignupRequest);
 
-    // 토큰 저장
-    this.saveTokens(response.access, response.refresh);
+    console.log("📝 Signup response:", response);
+
+    // ✅ Access token은 localStorage에 저장
+    if (response.access) {
+      localStorage.setItem("token", response.access);
+      console.log("💾 Access token saved to localStorage");
+    }
+
+    // ✅ Refresh token은 서버가 HTTP-only 쿠키로 설정
+    console.log("🍪 Refresh token should be set as HTTP-only cookie by server");
 
     return response;
   }
 
-  logout(): void {
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
+  async logout(): Promise<void> {
+    try {
+      console.log("🚪 Attempting logout...");
+      // 서버에 로그아웃 요청을 보내서 refresh token 쿠키를 클리어
+      await apiClient.post("/accounts/logout/", {});
+      console.log("🚪 Logout successful");
+    } catch (error) {
+      console.error("🚪 Logout error:", error);
+    }
+
+    // 🧹 로컬 데이터 클리어 (access token과 사용자 정보)
     localStorage.removeItem("user");
-    this.refreshPromise = null;
+    localStorage.removeItem("token");
+    console.log("🧹 Local auth data cleared");
   }
 
   getCurrentUser(): User | null {
     const userStr = localStorage.getItem("user");
     if (userStr && userStr !== "undefined") {
       try {
-        return JSON.parse(userStr);
+        const user = JSON.parse(userStr);
+        console.log("👤 Current user from localStorage:", user);
+        return user;
       } catch {
+        console.warn("👤 Failed to parse user from localStorage");
         return null;
       }
     }
+    console.log("👤 No user in localStorage");
     return null;
   }
 
   saveUser(user: User): void {
     localStorage.setItem("user", JSON.stringify(user));
+    console.log("💾 User saved to localStorage:", user);
   }
 
-  isAuthenticated(): boolean {
-    return !!localStorage.getItem("token");
-  }
-
+  // ✅ Access token 관리 (localStorage 기반)
   getToken(): string | null {
     return localStorage.getItem("token");
   }
 
-  getRefreshToken(): string | null {
-    return localStorage.getItem("refreshToken");
+  isAuthenticated(): boolean {
+    return !!this.getToken();
   }
 
-  private saveTokens(accessToken: string, refreshToken: string): void {
-    localStorage.setItem("token", accessToken);
-    localStorage.setItem("refreshToken", refreshToken);
-  }
-
-  async refreshAccessToken(): Promise<string> {
-    // If a refresh is already in progress, return the existing promise
-    if (this.refreshPromise) {
-      return this.refreshPromise;
-    }
-
-    // Create a new refresh promise
-    this.refreshPromise = this.performTokenRefresh();
-
-    try {
-      const newToken = await this.refreshPromise;
-      return newToken;
-    } finally {
-      // Clear the promise after completion
-      this.refreshPromise = null;
-    }
-  }
-
-  private async performTokenRefresh(): Promise<string> {
-    const refreshToken = this.getRefreshToken();
-
-    if (!refreshToken) {
-      throw new Error("No refresh token available");
-    }
-
-    try {
-      const response = await apiClient.post<TokenRefreshResponse>(
-        "/accounts/token/refresh/",
-        { refresh: refreshToken } as TokenRefreshRequest,
-        { requireAuth: false } // Don't use auth header for refresh
-      );
-
-      if (response.access) {
-        localStorage.setItem("token", response.access);
-
-        // If a new refresh token is provided, update it
-        if (response.refresh) {
-          localStorage.setItem("refreshToken", response.refresh);
-        }
-
-        return response.access;
-      }
-
-      throw new Error("No access token in refresh response");
-    } catch (error) {
-      // If refresh fails, clear all auth data
-      this.logout();
-      throw error;
-    }
-  }
-
+  // ✅ 토큰 만료 검사 (Access token용)
   isTokenExpired(token: string): boolean {
     try {
-      // JWT tokens have three parts separated by dots
       const parts = token.split(".");
       if (parts.length !== 3) {
         return true;
       }
 
-      // Decode the payload (second part)
       const payload = JSON.parse(atob(parts[1]));
-
       if (!payload.exp) {
-        return false; // If no expiration, assume it's valid
+        return false;
       }
 
-      // Check if token is expired (with 60 second buffer)
+      // 30초 버퍼로 만료 검사
       const currentTime = Math.floor(Date.now() / 1000);
-      return payload.exp < currentTime + 60;
+      return payload.exp < currentTime + 30;
     } catch (error) {
-      // If we can't decode the token, assume it's invalid
+      console.error("Token decode error:", error);
       return true;
     }
   }
 
+  // ✅ 유효한 access token 가져오기
   async getValidToken(): Promise<string | null> {
     const token = this.getToken();
 
@@ -162,11 +134,11 @@ class AuthService {
       return null;
     }
 
-    // Check if token is expired or about to expire
+    // 토큰 만료 검사
     if (this.isTokenExpired(token)) {
       try {
-        const newToken = await this.refreshAccessToken();
-        return newToken;
+        await this.refreshAccessToken();
+        return this.getToken(); // 재발급된 새 토큰 반환
       } catch (error) {
         console.error("Failed to refresh token:", error);
         return null;
@@ -174,6 +146,46 @@ class AuthService {
     }
 
     return token;
+  }
+
+  // ✅ Access token 재발급 (HTTP-only 쿠키의 refresh token 사용)
+  async refreshAccessToken(): Promise<void> {
+    try {
+      console.log(
+        "🔄 Refreshing access token using HTTP-only refresh token..."
+      );
+
+      // 서버의 HTTP-only 쿠키에 있는 refresh token으로 재발급
+      const response = await apiClient.post<TokenRefreshResponse>(
+        "/accounts/token/refresh/",
+        {}
+      );
+
+      if (response.access) {
+        localStorage.setItem("token", response.access);
+        console.log("✅ New access token saved to localStorage");
+      } else {
+        throw new Error("No access token in refresh response");
+      }
+    } catch (error) {
+      console.error("❌ Token refresh failed:", error);
+      // 재발급 실패 시 로그아웃
+      await this.logout();
+      throw error;
+    }
+  }
+
+  // 서버에서 인증 상태 확인 (선택적)
+  async checkAuthStatus(): Promise<boolean> {
+    try {
+      console.log("🔍 Checking auth status with server...");
+      await apiClient.get("/accounts/profile/");
+      console.log("✅ Server auth check: authenticated");
+      return true;
+    } catch (error) {
+      console.log("❌ Server auth check: not authenticated", error);
+      return false;
+    }
   }
 }
 

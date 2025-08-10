@@ -1,5 +1,12 @@
 import { apiClient } from "./api-client";
-import { Wordbook, WordbookResponse, SaveWordbookRequest } from "@/types/api";
+import {
+  Wordbook,
+  WordbookResponse,
+  SaveWordbookRequest,
+  ReviewData,
+  ReviewSubmission,
+  ReviewResponse,
+} from "@/types/api";
 
 class WordbookService {
   async getWordbooks(): Promise<WordbookResponse> {
@@ -33,6 +40,23 @@ class WordbookService {
     return apiClient.put<Wordbook>(`/wordbooks/${id}/`, data, {
       requireAuth: true,
     });
+  }
+
+  // Review related methods
+  async getReviewData(id: number): Promise<ReviewData> {
+    return apiClient.get<ReviewData>(`/wordbooks/${id}/review/`, {
+      requireAuth: true,
+    });
+  }
+
+  async submitReview(data: ReviewSubmission): Promise<ReviewResponse> {
+    return apiClient.post<ReviewResponse>(
+      `/wordbooks/${data.wordbook_id}/review/submit/`,
+      data,
+      {
+        requireAuth: true,
+      }
+    );
   }
 }
 

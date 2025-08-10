@@ -1,21 +1,21 @@
 "use client";
 
-import React, {
+import {
   createContext,
   useContext,
   useState,
   useEffect,
   ReactNode,
 } from "react";
-import { authService, APIError } from "@/services";
-import type { User } from "@/types/api";
-import { authInterceptor } from "@/utils/auth-interceptor";
+import { authService } from "@/services/auth.service";
+import { User } from "@/types/api";
+import { APIError } from "@/services/api-client";
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (username: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -26,19 +26,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // 로컬 스토리지에서 사용자 정보 확인
-    const savedUser = authService.getCurrentUser();
-    if (savedUser) {
-      setUser(savedUser);
-      // Start token monitoring if user is logged in
-      authInterceptor.startTokenMonitoring();
-    }
-    setIsLoading(false);
+    // ✅ localStorage에서 사용자 정보와 access token 확인
+    const checkAuth = async () => {
+      const savedUser = authService.getCurrentUser();
+      const accessToken = authService.getToken();
 
-    // Cleanup on unmount
-    return () => {
-      authInterceptor.stopTokenMonitoring();
+      if (savedUser && accessToken) {
+        // access token이 유효한지 확인
+        const validToken = await authService.getValidToken();
+        if (validToken) {
+          setUser(savedUser);
+          console.log("✅ User authenticated with valid access token");
+        } else {
+          // 토큰이 유효하지 않으면 로컬 데이터 클리어
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          console.log("❌ Invalid token, cleared local data");
+        }
+      } else {
+        console.log("❌ No user or access token found");
+      }
+
+      setIsLoading(false);
     };
+
+    checkAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -57,11 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(user);
       authService.saveUser(user);
-      
-      // Start token monitoring after successful login
-      authInterceptor.startTokenMonitoring();
+
+      console.log("✅ Login successful");
     } catch (error) {
-      console.error("로그인 오류:", error);
+      console.error("❌ Login error:", error);
       if (error instanceof APIError) {
         throw new Error(error.message);
       }
@@ -87,11 +98,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(user);
       authService.saveUser(user);
-      
-      // Start token monitoring after successful signup
-      authInterceptor.startTokenMonitoring();
+
+      console.log("✅ Signup successful");
     } catch (error) {
-      console.error("회원가입 오류:", error);
+      console.error("❌ Signup error:", error);
       if (error instanceof APIError) {
         throw new Error(error.message);
       }
@@ -101,12 +111,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
-    authService.logout();
-    
-    // Stop token monitoring on logout
-    authInterceptor.stopTokenMonitoring();
+    await authService.logout();
+    console.log("✅ Logout completed");
   };
 
   return (

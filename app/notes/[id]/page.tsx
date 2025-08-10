@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,16 +22,31 @@ import { wordbookService } from "@/services";
 import type { Wordbook, Sentence } from "@/types/api";
 import nlp from "compromise";
 
-export default function NoteDetailPage({ params }: { params: { id: string } }) {
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function NoteDetailPage({ params }: PageProps) {
   const [activeTab, setActiveTab] = useState("words");
+  const [wordbookId, setWordbookId] = useState<string | null>(null);
+
+  // ✅ params를 await하여 id 추출
+  useEffect(() => {
+    const getParams = async () => {
+      const resolvedParams = await params;
+      setWordbookId(resolvedParams.id);
+    };
+    getParams();
+  }, [params]);
 
   const {
     data: wordbook,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["wordbook", params.id],
-    queryFn: () => wordbookService.getWordbook(Number(params.id)),
+    queryKey: ["wordbook", wordbookId],
+    queryFn: () => wordbookService.getWordbook(Number(wordbookId)),
+    enabled: !!wordbookId, // wordbookId가 있을 때만 쿼리 실행
   });
 
   const getLanguageLabel = (lang: string) => {
@@ -96,6 +111,25 @@ export default function NoteDetailPage({ params }: { params: { id: string } }) {
       return part;
     });
   };
+
+  // wordbookId가 아직 로드되지 않았을 때
+  if (!wordbookId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center py-12">
+              <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <h3 className="text-lg font-medium text-white mb-2">
+                페이지를 로드하는 중...
+              </h3>
+              <p className="text-gray-400">잠시만 기다려주세요.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
