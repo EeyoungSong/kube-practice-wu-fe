@@ -77,10 +77,6 @@ export default function ReviewPage({ params }: { params: { id: string } }) {
     }
   };
 
-  const handleShowMeaning = () => {
-    setShowMeaning(true);
-  };
-
   const handleNext = () => {
     if (selectedAnswer === null) return;
 
@@ -351,20 +347,22 @@ export default function ReviewPage({ params }: { params: { id: string } }) {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Context */}
-              <div className="p-4 bg-gray-700 rounded-lg">
-                <p className="text-sm text-gray-400 mb-2">문맥:</p>
-                <p className="text-white italic">"{currentWord.context}"</p>
-              </div>
-
               {/* Question */}
               <div className="text-center">
                 <h2 className="text-4xl font-bold text-white mb-6">
                   {currentWord.word}
                 </h2>
-                <p className="text-lg text-gray-400 mb-4">
-                  이 단어의 뜻을 알고 있나요?
+                <p
+                  className="text-lg text-gray-400 mb-4 cursor-pointer"
+                  onClick={() => setShowMeaning(!showMeaning)}
+                >
+                  {showMeaning ? currentWord.meaning : "단어 뜻 보기"}
                 </p>
+              </div>
+              {/* Context */}
+              <div className="p-4 bg-gray-700 rounded-lg">
+                <p className="text-sm text-gray-400 mb-2">문맥:</p>
+                <p className="text-white italic">"{currentWord.context}"</p>
               </div>
 
               {/* Self Assessment Buttons */}
@@ -380,7 +378,7 @@ export default function ReviewPage({ params }: { params: { id: string } }) {
                 >
                   <div className="flex flex-col items-center gap-2">
                     <Check className="w-6 h-6" />
-                    <span>알고 있음</span>
+                    <span>알아요!</span>
                   </div>
                 </Button>
 
@@ -395,32 +393,10 @@ export default function ReviewPage({ params }: { params: { id: string } }) {
                 >
                   <div className="flex flex-col items-center gap-2">
                     <X className="w-6 h-6" />
-                    <span>모름</span>
+                    <span>몰라요..</span>
                   </div>
                 </Button>
               </div>
-
-              {/* Show Meaning Button */}
-              {selectedAnswer === true && !showMeaning && (
-                <div className="text-center">
-                  <Button
-                    onClick={handleShowMeaning}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                    variant="outline"
-                  >
-                    <Eye className="w-4 h-4 mr-2" />뜻 확인하기
-                  </Button>
-                </div>
-              )}
-
-              {/* Meaning Display */}
-              {showMeaning && (
-                <div className="p-4 bg-blue-900/30 border border-blue-500 rounded-lg text-center">
-                  <p className="text-blue-300 font-medium text-lg">
-                    {currentWord.meaning}
-                  </p>
-                </div>
-              )}
 
               {/* Next Button */}
               {selectedAnswer !== null &&

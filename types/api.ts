@@ -69,7 +69,7 @@ export interface Sentence {
 export interface Wordbook {
   id: number;
   name: string;
-  category: number | null;
+  category: number;
   category_name: string;
   language: string;
   input_type: "image" | "text";
