@@ -323,24 +323,6 @@ export default function NoteDetailPage({ params }: PageProps) {
                           <p className="text-lg font-medium text-white flex-1">
                             {sentence.text}
                           </p>
-                          <div className="flex items-center gap-2 ml-4">
-                            <Badge
-                              className={getReviewStatusColor(
-                                sentence.is_last_review_successful ?? false
-                              )}
-                            >
-                              <StatusIcon className="w-3 h-3 mr-1" />
-                              {sentence.is_last_review_successful
-                                ? "완료"
-                                : "미완료"}
-                            </Badge>
-                            <Badge
-                              variant="outline"
-                              className="border-gray-500 text-gray-300"
-                            >
-                              {sentence.review_count}회 복습
-                            </Badge>
-                          </div>
                         </div>
                         <p className="text-gray-400">{sentence.meaning}</p>
                         {sentence.last_reviewed_at && (
