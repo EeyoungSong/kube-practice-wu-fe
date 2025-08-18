@@ -38,6 +38,8 @@ import {
 import Link from "next/link";
 import { languages } from "./add/page";
 import Header from "@/components/Header";
+import dynamic from "next/dynamic";
+
 import { useCategories } from "@/hooks/use-categories";
 import { useWordbooks } from "@/hooks/use-wordbooks";
 import type { Wordbook, WordbookResponse } from "@/hooks/use-wordbooks";
@@ -172,14 +174,6 @@ export default function NotesPage() {
     );
   };
 
-  const getReviewStatusColor = (reviewedWords: number, totalWords: number) => {
-    const percentage = totalWords > 0 ? (reviewedWords / totalWords) * 100 : 0;
-    if (percentage >= 80) return "bg-green-900 text-green-200 border-green-800";
-    if (percentage >= 50)
-      return "bg-yellow-900 text-yellow-200 border-yellow-800";
-    return "bg-red-900 text-red-200 border-red-800";
-  };
-
   // 로딩 상태 처리
   if (categoriesLoading || wordbooksLoading) {
     return (
@@ -218,7 +212,7 @@ export default function NotesPage() {
           {/* Filters */}
           <div className="mb-8">
             <div className="flex flex-row justify-between gap-6">
-              <div className="flex flex-row w-1/2 items-center gap-4">
+              <div className="flex flex-row w-2/3 items-center gap-4">
                 {/* 보기 모드 전환 */}
                 <div className="flex border border-gray-600 rounded-lg overflow-hidden">
                   <Button

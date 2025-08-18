@@ -37,7 +37,7 @@ interface WordNodeData {
   wordId: number;
   frequency?: number;
   meaning?: string; // 단어 뜻
-  language?: "ko" | "en"; // 언어 구분
+  language?: "한국어" | "영어" | "중국어"; // 언어 구분
 }
 
 const edgeStyle = {
@@ -73,7 +73,7 @@ function nodeStyle(intensity: number = 1, language: "ko" | "en" = "ko") {
 
 // 커스텀 단어 노드 컴포넌트
 const WordNode = memo(({ data, selected }: NodeProps<WordNodeData>) => {
-  const hasTooltip = data.meaning && data.language === "en";
+  const hasTooltip = data.meaning && data.language === "영어";
 
   const nodeContent = (
     <div
@@ -81,7 +81,7 @@ const WordNode = memo(({ data, selected }: NodeProps<WordNodeData>) => {
         px-2 py-1 rounded-full text-xs font-medium cursor-pointer
         transition-all duration-200 hover:scale-110
         ${
-          data.language === "en"
+          data.language === "영어"
             ? "bg-white text-black border border-gray-300"
             : "bg-amber-400 text-black border border-amber-500"
         }

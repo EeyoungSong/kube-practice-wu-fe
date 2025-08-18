@@ -15,11 +15,18 @@ import {
   CheckCircle,
   XCircle,
   Clock,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { wordbookService } from "@/services";
-import type { Wordbook, Sentence } from "@/types/api";
+import type {
+  Wordbook,
+  Sentence,
+  WordWithSentences,
+  SentenceWithWordbook,
+} from "@/types/api";
 import nlp from "compromise";
 
 interface PageProps {
@@ -29,6 +36,19 @@ interface PageProps {
 export default function NoteDetailPage({ params }: PageProps) {
   const [activeTab, setActiveTab] = useState("words");
   const [wordbookId, setWordbookId] = useState<string | null>(null);
+  const [expandedWords, setExpandedWords] = useState<Set<number>>(new Set());
+
+  const toggleWordExpanded = (wordId: number) => {
+    setExpandedWords((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(wordId)) {
+        newSet.delete(wordId);
+      } else {
+        newSet.add(wordId);
+      }
+      return newSet;
+    });
+  };
 
   // ✅ params를 await하여 id 추출
   useEffect(() => {
@@ -356,59 +376,179 @@ export default function NoteDetailPage({ params }: PageProps) {
             </TabsContent>
 
             <TabsContent value="words" className="space-y-4">
-              {wordbookData.sentences
-                .flatMap((sentence) =>
-                  sentence.words.map((word) => ({ ...word, sentence }))
-                )
-                .map((wordWithSentence) => (
+              {wordbookData.words_with_sentences?.map(
+                (wordData: WordWithSentences) => (
                   <Card
-                    key={`${wordWithSentence.sentence.id}-${wordWithSentence.id}`}
+                    key={wordData.id}
                     className="bg-gray-800 border-gray-700"
                   >
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div>
                           <h3 className="text-xl font-bold text-white mb-1">
-                            {wordWithSentence.text}
+                            {wordData.text}
                           </h3>
-                          <p className="text-gray-400">
-                            {wordWithSentence.meaning}
-                          </p>
                         </div>
                       </div>
 
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <div>
-                          <p className="text-sm text-gray-400 mb-2">문맥:</p>
-                          <div className="text-sm text-gray-300 bg-gray-700 p-3 rounded">
-                            <p className="font-medium mb-1">
-                              {highlightWordInSentence(
-                                wordWithSentence.sentence.text,
-                                wordWithSentence.text
+                          <div className="space-y-3">
+                            {wordData.sentences
+                              .filter(
+                                (sentence: SentenceWithWordbook) =>
+                                  sentence.is_current_wordbook
+                              )
+                              .map(
+                                (
+                                  sentence: SentenceWithWordbook,
+                                  index: number
+                                ) => (
+                                  <div
+                                    key={sentence.id}
+                                    className="text-gray-300 bg-gray-700 p-3 rounded"
+                                  >
+                                    <div className="flex items-start justify-between mb-2">
+                                      <div className="flex-1">
+                                        <p className="font-medium mb-1 text-lg">
+                                          {highlightWordInSentence(
+                                            sentence.text,
+                                            wordData.text
+                                          )}
+                                        </p>
+                                        <p className="text-gray-400 italic mb-2 text-sm">
+                                          "{sentence.meaning}"
+                                        </p>
+                                        <div className="flex items-center gap-2">
+                                          <Badge
+                                            variant="outline"
+                                            className="border-gray-500 text-gray-300 text-xs"
+                                          >
+                                            {sentence.word_meaning_in_context}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {sentence.last_reviewed_at && (
+                                      <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
+                                        <Clock className="w-3 h-3" />
+                                        마지막 복습:{" "}
+                                        {new Date(
+                                          sentence.last_reviewed_at
+                                        ).toLocaleDateString("ko-KR")}
+                                        <span className="mx-2">•</span>
+                                        복습 횟수: {sentence.review_count}회
+                                        <span className="mx-2">•</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )
                               )}
-                            </p>
-                            <p className="text-gray-400 italic">
-                              "{wordWithSentence.sentence.meaning}"
-                            </p>
                           </div>
                         </div>
 
-                        {wordWithSentence.sentence.last_reviewed_at && (
-                          <div className="flex items-center gap-2 text-sm text-gray-400">
-                            <Clock className="w-3 h-3" />
-                            마지막 복습:{" "}
-                            {new Date(
-                              wordWithSentence.sentence.last_reviewed_at
-                            ).toLocaleDateString("ko-KR")}
-                            <span className="mx-2">•</span>
-                            복습 횟수: {wordWithSentence.sentence.review_count}
-                            회
+                        {/* 다른 단어장에서의 사용 */}
+                        {wordData.sentences.some(
+                          (sentence: SentenceWithWordbook) =>
+                            !sentence.is_current_wordbook
+                        ) && (
+                          <div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleWordExpanded(wordData.id)}
+                              className="text-gray-400 hover:text-white p-0 h-auto font-normal"
+                            >
+                              <div className="flex items-center gap-2">
+                                {expandedWords.has(wordData.id) ? (
+                                  <ChevronUp className="w-4 h-4" />
+                                ) : (
+                                  <ChevronDown className="w-4 h-4" />
+                                )}
+                                <span>
+                                  다른 단어장에서의 사용 (
+                                  {
+                                    wordData.sentences.filter(
+                                      (s: SentenceWithWordbook) =>
+                                        !s.is_current_wordbook
+                                    ).length
+                                  }
+                                  개)
+                                </span>
+                              </div>
+                            </Button>
+
+                            {expandedWords.has(wordData.id) && (
+                              <div className="space-y-3 mt-3">
+                                {wordData.sentences
+                                  .filter(
+                                    (sentence: SentenceWithWordbook) =>
+                                      !sentence.is_current_wordbook
+                                  )
+                                  .map(
+                                    (
+                                      sentence: SentenceWithWordbook,
+                                      index: number
+                                    ) => (
+                                      <div
+                                        key={sentence.id}
+                                        className="text-sm text-gray-300 bg-gray-600 p-3 rounded border-l-2 border-gray-400"
+                                      >
+                                        <div className="flex items-start justify-between mb-2">
+                                          <div className="flex-1">
+                                            <p className="font-medium mb-1">
+                                              {highlightWordInSentence(
+                                                sentence.text,
+                                                wordData.text
+                                              )}
+                                            </p>
+                                            <p className="text-gray-400 italic mb-2">
+                                              "{sentence.meaning}"
+                                            </p>
+                                            <div className="flex items-center gap-2">
+                                              <Badge
+                                                variant="outline"
+                                                className="border-gray-400 text-gray-300 text-xs"
+                                              >
+                                                {
+                                                  sentence.word_meaning_in_context
+                                                }
+                                              </Badge>
+                                              <Badge
+                                                variant="secondary"
+                                                className="bg-gray-500 text-gray-200 text-xs"
+                                              >
+                                                {sentence.wordbook_info?.name}
+                                              </Badge>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {sentence.last_reviewed_at && (
+                                          <div className="flex items-center gap-2 text-xs text-gray-400 mt-2">
+                                            <Clock className="w-3 h-3" />
+                                            마지막 복습:{" "}
+                                            {new Date(
+                                              sentence.last_reviewed_at
+                                            ).toLocaleDateString("ko-KR")}
+                                            <span className="mx-2">•</span>
+                                            복습 횟수: {sentence.review_count}회
+                                            <span className="mx-2">•</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )
+                                  )}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
                     </CardContent>
                   </Card>
-                ))}
+                )
+              )}
             </TabsContent>
           </Tabs>
         </div>

@@ -75,6 +75,25 @@ export interface Wordbook {
   input_type: "image" | "text";
   created_at: string;
   sentences: Sentence[];
+  words_with_sentences?: WordWithSentences[];
+}
+
+export interface WordbookInfo {
+  id: number;
+  name: string;
+  category_name: string;
+}
+
+export interface WordWithSentences {
+  id: number;
+  text: string;
+  sentences: SentenceWithWordbook[];
+}
+
+export interface SentenceWithWordbook extends Sentence {
+  word_meaning_in_context: string;
+  is_current_wordbook: boolean;
+  wordbook_info: WordbookInfo;
 }
 
 export interface WordbookResponse {
