@@ -42,6 +42,7 @@ import dynamic from "next/dynamic";
 
 import { useCategories } from "@/hooks/use-categories";
 import { useWordbooks } from "@/hooks/use-wordbooks";
+import { useLanguage } from "@/hooks/use-language";
 import type { Wordbook, WordbookResponse } from "@/hooks/use-wordbooks";
 import type { Category } from "@/types/api";
 import { wordbookService } from "@/services";
@@ -60,8 +61,10 @@ interface Note {
 export default function NotesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("전체 카테고리");
-  const [selectedLanguage, setSelectedLanguage] = useState(languages[0].value);
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "timeline"
+
+  // 전역 언어 상태 관리
+  const { selectedLanguage, setSelectedLanguage, isLoaded } = useLanguage();
 
   // 카테고리 API 호출
   const {
@@ -119,12 +122,8 @@ export default function NotesPage() {
 
   const getLanguageLabel = (lang: string) => {
     const labels: { [key: string]: string } = {
-      en: "English",
-      fr: "Français",
-      es: "Español",
-      de: "Deutsch",
-      ja: "日本語",
-      ko: "한국어",
+      english: "영어",
+      chinese: "중국어",
     };
     return labels[lang] || lang;
   };
@@ -141,7 +140,7 @@ export default function NotesPage() {
       selectedCategory === "전체 카테고리" ||
       note.category === selectedCategory;
     const matchesLanguage =
-      selectedLanguage === "전체 언어" || note.language === selectedLanguage;
+      selectedLanguage === "all" || note.language === selectedLanguage;
     return matchesSearch && matchesCategory && matchesLanguage;
   });
 
@@ -174,8 +173,8 @@ export default function NotesPage() {
     );
   };
 
-  // 로딩 상태 처리
-  if (categoriesLoading || wordbooksLoading) {
+  // 로딩 상태 처리 (언어 로딩 추가)
+  if (categoriesLoading || wordbooksLoading || !isLoaded) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
         <Header

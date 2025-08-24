@@ -31,12 +31,13 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import { useCategories } from "@/hooks/use-categories";
+import { useLanguage } from "@/hooks/use-language";
 import { extractTextFromImage, sentenceSplit } from "@/lib/api";
 
 export const languages = [
-  { value: "en", label: "English" },
-  { value: "ja", label: "日本語" },
-  { value: "ch", label: "中文" },
+  { value: "all", label: "전체 언어" },
+  { value: "english", label: "영어" },
+  { value: "chinese", label: "중국어" },
 ];
 
 // 백업용 로컬 문장 분리 함수
@@ -51,7 +52,9 @@ const splitIntoSentencesLocal = (text: string): string[] => {
 
 export default function CreateNotePage() {
   const router = useRouter();
-  const [selectedLanguage, setSelectedLanguage] = useState("en");
+
+  // 전역 언어 상태 관리
+  const { selectedLanguage, setSelectedLanguage, isLoaded } = useLanguage();
   const [selectedInputType, setSelectedInputType] = useState("");
   const [noteName, setNoteName] = useState("");
   const [category, setCategory] = useState("");
@@ -211,6 +214,18 @@ export default function CreateNotePage() {
         return false;
     }
   };
+
+  // 언어 로딩이 완료될 때까지 로딩 화면 표시
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white">언어 설정을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">

@@ -1,20 +1,20 @@
 /**
  * @deprecated This file is deprecated. Please use the new modular services instead.
- * 
+ *
  * Migration Guide:
  * - Import services from '@/services' instead of '@/lib/api'
  * - Use authService, wordbookService, extractionService, etc.
  * - See docs/API_MIGRATION_GUIDE.md for detailed migration instructions
- * 
+ *
  * Examples:
  * - OLD: import { fetchCategories } from '@/lib/api'
  * - NEW: import { categoryService } from '@/services'
- * 
+ *
  * - OLD: await fetchCategories()
  * - NEW: await categoryService.getCategories()
  */
 
-const API_BASE_URL = "http://localhost:8000/api/v1";
+const API_BASE_URL = "http://localhost:80/api/v1";
 
 interface ApiOptions {
   method?: string;

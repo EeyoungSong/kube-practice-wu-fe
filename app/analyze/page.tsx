@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { extractionService, wordService, wordbookService } from "@/services";
+import { useLanguage } from "@/hooks/use-language";
 import type { SaveWordbookRequest } from "@/types/api";
 import {
   Tooltip,
@@ -28,6 +29,7 @@ interface Word {
   original: string;
   word: string;
   meaning: string;
+  others: string;
   partOfSpeech: string;
   isSelected: boolean;
   isKnown?: boolean;
@@ -68,6 +70,7 @@ interface WordContext {
         id: number;
         text: string;
         meaning: string;
+        others: string;
       }>;
       last_reviewed_at: string;
       review_count: number;
@@ -80,6 +83,9 @@ interface WordContext {
 export default function AnalyzePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  // 전역 언어 상태 (기본값으로 사용)
+  const { selectedLanguage: globalLanguage } = useLanguage();
 
   // 새로운 방식: sessionStorage에서 데이터 읽기
   const analysisId = searchParams.get("id");
@@ -102,8 +108,12 @@ export default function AnalyzePage() {
     }
 
     // 기존 방식: URL 파라미터에서 읽기 (하위 호환성)
+    const lang = searchParams.get("lang") || globalLanguage || "en";
+    // "all"인 경우 기본 언어로 변환
+    const actualLanguage = lang === "all" ? "en" : lang;
+
     return {
-      language: searchParams.get("lang") || "en",
+      language: actualLanguage,
       inputType: searchParams.get("type") || "text",
       noteName: searchParams.get("name") || "",
       category: searchParams.get("category") || "일반",
@@ -231,6 +241,7 @@ export default function AnalyzePage() {
             original: word.original_text,
             word: word.text,
             meaning: word.meaning,
+            others: word.others,
             partOfSpeech: getPartOfSpeech(word.text),
             isSelected: false,
           })
@@ -348,6 +359,7 @@ export default function AnalyzePage() {
               <TooltipContent side="bottom" className="max-w-xs bg-gray-800">
                 <div className="space-y-1">
                   <p className="text-sm">{word.meaning}</p>
+                  <p className="text-xs text-gray-400">{word.others}</p>
                 </div>
               </TooltipContent>
             </Tooltip>
@@ -404,6 +416,7 @@ export default function AnalyzePage() {
           .map((word) => ({
             text: word.word,
             meaning: word.meaning,
+            others: word.others,
           })),
       })),
     };
@@ -550,6 +563,9 @@ export default function AnalyzePage() {
                                 </div>
                                 <p className="text-gray-300">
                                   {selectedWordInfo.word.meaning}
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                  {selectedWordInfo.word.others}
                                 </p>
                               </div>
 

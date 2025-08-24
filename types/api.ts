@@ -152,6 +152,7 @@ export interface AnalyzedWord {
   text: string;
   original_text: string;
   meaning: string;
+  others: string;
 }
 
 export interface AnalyzedSentence {
