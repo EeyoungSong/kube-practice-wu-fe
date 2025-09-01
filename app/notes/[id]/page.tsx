@@ -268,33 +268,12 @@ export default function NoteDetailPage({ params }: PageProps) {
                     variant="outline"
                     className="border-gray-500 text-gray-300"
                   >
-                    {getLanguageLabel(wordbookData.language)}
+                    {wordbookData.language}
                   </Badge>
-                  <Badge
-                    variant="outline"
-                    className="border-gray-500 text-gray-300"
-                  >
-                    {wordbookData.input_type === "image" ? "이미지" : "텍스트"}
-                  </Badge>
-                  <span className="text-sm text-gray-400 flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    {new Date(wordbookData.created_at).toLocaleDateString(
-                      "ko-KR"
-                    )}
-                  </span>
                 </div>
               </div>
             </div>
             <div className="flex gap-2">
-              <Link href={`/constellation/${wordbookData.id}`}>
-                <Button
-                  variant="outline"
-                  className="border-gray-600 bg-gray-800 text-white hover:bg-gray-700"
-                >
-                  <Network className="w-4 h-4 mr-2" />
-                  별자리 보기
-                </Button>
-              </Link>
               <Link href={`/review/${wordbookData.id}`}>
                 <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
                   <Play className="w-4 h-4 mr-2" />
