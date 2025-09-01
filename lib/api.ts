@@ -99,6 +99,7 @@ export async function extractTextFromImage(
     };
   }
 
+  // TODO: 환경변수 설정 필요
   const response = await fetch(`${API_BASE_URL}/extract/ocr/sentence/`, config);
 
   if (!response.ok) {
