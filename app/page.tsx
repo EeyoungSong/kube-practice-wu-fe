@@ -206,12 +206,13 @@ export default function NotesPage() {
         languages={languages}
       />
 
-      <main className="container mx-auto py-8">
+      <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           {/* Filters */}
           <div className="mb-8">
-            <div className="flex flex-row justify-between gap-6">
-              <div className="flex flex-row w-2/3 items-center gap-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-start">
+              {/* 상단: 보기 모드 전환과 새 노트 만들기 버튼 */}
+              <div className="flex flex-row justify-between items-center">
                 {/* 보기 모드 전환 */}
                 <div className="flex border border-gray-600 rounded-lg overflow-hidden">
                   <Button
@@ -239,68 +240,73 @@ export default function NotesPage() {
                     <History className="w-4 h-4" />
                   </Button>
                 </div>
-                {viewMode === "grid" && (
-                  <>
-                    <div className="space-x-2 mx-2">
-                      <Select
-                        value={selectedCategory}
-                        onValueChange={setSelectedCategory}
-                        disabled={categoriesLoading}
-                        defaultValue="전체 카테고리"
-                      >
-                        <SelectTrigger className="w-40 bg-gray-800 text-white focus:ring-0 focus:ring-offset-0 border-none">
-                          <SelectValue
-                            placeholder={
-                              categoriesLoading
-                                ? "카테고리 로딩 중..."
-                                : "카테고리 선택"
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent className="bg-gray-800 border-none">
-                          {categoriesData && (
-                            <>
-                              <SelectItem
-                                value="전체 카테고리"
-                                className="text-white hover:bg-gray-700"
-                              >
-                                전체 카테고리
-                              </SelectItem>
-                              {categoriesData.map((category: Category) => (
-                                <SelectItem
-                                  key={category.id}
-                                  value={category.name}
-                                  className="text-white hover:bg-gray-700"
-                                >
-                                  {category.name}
-                                </SelectItem>
-                              ))}
-                            </>
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-x-2 gap-2">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <Input
-                          placeholder="노트 이름으로 검색..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="pl-10 bg-gray-800 border-none text-white placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0"
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-              <div className="space-y-2">
+
+                {/* 새 노트 만들기 버튼 */}
                 <Link href="/add">
-                  <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                    <Plus className="w-4 h-4 mr-2" />새 노트 만들기
+                  <Button className="bg-indigo-600 hover:bg-indigo-700 text-white m-4">
+                    <Plus className="w-4 h-4 m-2" />
+                    <span className="hidden sm:inline">새 노트 만들기</span>
+                    <span className="sm:hidden">새 노트</span>
                   </Button>
                 </Link>
               </div>
+
+              {/* 하단: 카테고리와 검색 (grid 모드일 때만) */}
+              {viewMode === "grid" && (
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <div className="flex-shrink-0">
+                    <Select
+                      value={selectedCategory}
+                      onValueChange={setSelectedCategory}
+                      disabled={categoriesLoading}
+                      defaultValue="전체 카테고리"
+                    >
+                      <SelectTrigger className="w-full sm:w-40 bg-gray-800 text-white focus:ring-0 focus:ring-offset-0 border-none">
+                        <SelectValue
+                          placeholder={
+                            categoriesLoading
+                              ? "카테고리 로딩 중..."
+                              : "카테고리 선택"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-none">
+                        {categoriesData && (
+                          <>
+                            <SelectItem
+                              value="전체 카테고리"
+                              className="text-white hover:bg-gray-700"
+                            >
+                              전체 카테고리
+                            </SelectItem>
+                            {categoriesData.map((category: Category) => (
+                              <SelectItem
+                                key={category.id}
+                                value={category.name}
+                                className="text-white hover:bg-gray-700"
+                              >
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        placeholder="노트 이름으로 검색..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10 bg-gray-800 border-none text-white placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
