@@ -14,7 +14,7 @@
  * - NEW: await categoryService.getCategories()
  */
 
-const API_BASE_URL = "http://localhost:80/api/v1";
+const API_BASE_URL = "http://3.34.146.213/api/v1";
 
 interface ApiOptions {
   method?: string;
