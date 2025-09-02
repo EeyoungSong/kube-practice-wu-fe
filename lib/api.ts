@@ -14,6 +14,7 @@
  * - NEW: await categoryService.getCategories()
  */
 
+// 도메인네임으로 변경함
 const API_BASE_URL = "https://api.word-universe.win/api/v1";
 
 interface ApiOptions {
