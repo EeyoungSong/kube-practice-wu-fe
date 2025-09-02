@@ -14,7 +14,7 @@
  * - NEW: await categoryService.getCategories()
  */
 
-const API_BASE_URL = "https://13.209.16.7/api/v1";
+const API_BASE_URL = "https://api.word-universe.win/api/v1";
 
 interface ApiOptions {
   method?: string;
