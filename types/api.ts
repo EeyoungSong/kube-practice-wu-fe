@@ -53,6 +53,7 @@ export interface Word {
   text: string;
   original_text?: string;
   meaning: string;
+  others?: string;
 }
 
 export interface Sentence {

@@ -345,6 +345,7 @@ export default function NoteDetailPage({ params }: PageProps) {
                             title={word.meaning}
                           >
                             {word.text}
+                            {word.others ? ` (${word.others})` : ""}
                           </Badge>
                         ))}
                       </div>

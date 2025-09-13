@@ -1,7 +1,11 @@
 // Export all services
 export { authService } from "./auth.service";
 export { wordbookService } from "./wordbook.service";
-export { extractionService } from "./extraction.service";
+export {
+  extractTextFromImage,
+  splitSentences,
+  analyzeSentences,
+} from "./extraction.service";
 export { categoryService } from "./category.service";
 export { wordService } from "./word.service";
 

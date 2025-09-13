@@ -32,7 +32,7 @@ import {
 import Header from "@/components/Header";
 import { useCategories } from "@/hooks/use-categories";
 import { useLanguage } from "@/hooks/use-language";
-import { extractTextFromImage, sentenceSplit } from "@/lib/api";
+import { extractTextFromImage, splitSentences } from "@/services";
 
 export const languages = [
   { value: "all", label: "전체 언어" },
@@ -127,7 +127,7 @@ export default function CreateNotePage() {
       // 서버 API 시도, 실패 시 로컬 함수 사용
       let sentences: string[];
       try {
-        sentences = await sentenceSplit(textContent);
+        sentences = await splitSentences(textContent);
       } catch (serverError) {
         console.warn("서버 API 실패, 로컬 분리 함수 사용:", serverError);
         sentences = splitIntoSentencesLocal(textContent);

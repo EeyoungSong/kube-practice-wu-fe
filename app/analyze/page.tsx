@@ -15,7 +15,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import Link from "next/link";
-import { extractionService, wordService, wordbookService } from "@/services";
+import { analyzeSentences, wordService, wordbookService } from "@/services";
 import { useLanguage } from "@/hooks/use-language";
 import type { SaveWordbookRequest } from "@/types/api";
 import {
@@ -211,7 +211,7 @@ export default function AnalyzePage() {
         sentence: sentenceToAnalyze.original,
         language,
       });
-      const response = await extractionService.analyzeSentences(
+      const response = await analyzeSentences(
         [sentenceToAnalyze.original],
         language
       );
