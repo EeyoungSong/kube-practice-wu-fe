@@ -4,7 +4,7 @@ import {
   SentenceSplitRequest,
   AnalyzeSentencesRequest,
   AnalyzeSentencesResponse,
-} from "@/types/api";
+} from "@/types/extraction";
 
 export async function extractTextFromImage(
   imageFile: File

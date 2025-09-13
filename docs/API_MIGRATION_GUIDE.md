@@ -151,7 +151,9 @@ interface Category {
 }
 
 // New
-import type { Category, Wordbook, User } from "@/types/api";
+import type { Category } from "@/types/category";
+import type { Wordbook } from "@/types/word";
+import type { User } from "@/types/auth";
 ```
 
 ### Updated SaveWordbook Payload

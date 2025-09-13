@@ -5,7 +5,7 @@ import {
   AuthResponse,
   User,
   TokenRefreshResponse,
-} from "@/types/api";
+} from "@/types/auth";
 
 class AuthService {
   async login(email: string, password: string): Promise<AuthResponse> {

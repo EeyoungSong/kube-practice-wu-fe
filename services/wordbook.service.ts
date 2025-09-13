@@ -6,7 +6,7 @@ import {
   ReviewData,
   ReviewSubmission,
   ReviewResponse,
-} from "@/types/api";
+} from "@/types/word";
 
 class WordbookService {
   async getWordbooks(): Promise<WordbookResponse> {

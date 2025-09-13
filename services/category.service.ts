@@ -1,5 +1,5 @@
 import { apiClient } from "./api-client";
-import { Category, CategoriesResponse } from "@/types/api";
+import { Category, CategoriesResponse } from "@/types/category";
 
 class CategoryService {
   async getCategories(): Promise<Category[]> {

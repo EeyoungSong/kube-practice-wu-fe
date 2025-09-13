@@ -13,4 +13,8 @@ export { wordService } from "./word.service";
 export { apiClient, APIError } from "./api-client";
 
 // Re-export types for convenience
-export * from "@/types/api";
+export * from "@/types/auth";
+export * from "@/types/category";
+export * from "@/types/common";
+export * from "@/types/extraction";
+export * from "@/types/word";

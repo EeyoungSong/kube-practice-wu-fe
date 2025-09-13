@@ -26,7 +26,7 @@ import type {
   Sentence,
   WordWithSentences,
   SentenceWithWordbook,
-} from "@/types/api";
+} from "@/types/word";
 import nlp from "compromise";
 
 interface PageProps {

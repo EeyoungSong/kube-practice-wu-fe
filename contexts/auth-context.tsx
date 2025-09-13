@@ -8,7 +8,7 @@ import {
   ReactNode,
 } from "react";
 import { authService } from "@/services/auth.service";
-import { User } from "@/types/api";
+import { User } from "@/types/auth";
 import { APIError } from "@/services/api-client";
 
 interface AuthContextType {

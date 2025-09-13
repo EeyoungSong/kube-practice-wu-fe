@@ -1,11 +1,11 @@
 import { apiClient } from "./api-client";
-import { WordHistory } from "@/types/api";
+import { WordHistory } from "@/types/word";
 
 class WordService {
   async getWordHistory(wordId: string): Promise<WordHistory> {
     // Note: This endpoint seems to be using a different base URL pattern
     // You might need to adjust this based on your actual API structure
-    return apiClient.get<WordHistory>(`/ocr/words/${wordId}/`, {
+    return apiClient.get<WordHistory>(`/words/${wordId}/`, {
       requireAuth: true,
     });
   }

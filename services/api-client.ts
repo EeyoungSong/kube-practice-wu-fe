@@ -1,4 +1,4 @@
-import { ApiOptions } from "@/types/api";
+import { ApiOptions } from "@/types/common";
 
 // TODO: 환경변수 설정 필요
 const API_BASE_URL =

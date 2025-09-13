@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { wordbookService } from "@/services";
-import type { ReviewWord, ReviewResult, ReviewData } from "@/types/api";
+import type { ReviewWord, ReviewResult, ReviewData } from "@/types/word";
 
 export default function ReviewPage({ params }: { params: { id: string } }) {
   const [currentIndex, setCurrentIndex] = useState(0);

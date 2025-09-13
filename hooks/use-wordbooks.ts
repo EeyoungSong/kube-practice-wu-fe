@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { wordbookService } from "@/services";
-import type { Wordbook, WordbookResponse, Sentence, Word } from "@/types/api";
+import type { Wordbook, WordbookResponse, Sentence, Word } from "@/types/word";
 
 export const useWordbooks = () => {
   return useQuery({

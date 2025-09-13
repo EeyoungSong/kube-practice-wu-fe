@@ -1,52 +1,3 @@
-// Common API types
-export interface ApiOptions {
-  method?: string;
-  headers?: Record<string, string>;
-  body?: any;
-  requireAuth?: boolean;
-}
-
-export interface ApiError {
-  message: string;
-  status?: number;
-  detail?: string;
-}
-
-// Authentication types
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface SignupRequest {
-  username: string;
-  email: string;
-  password: string;
-}
-
-export interface AuthResponse {
-  access: string;
-  refresh: string;
-  user_id: number;
-  username: string;
-}
-
-export interface TokenRefreshRequest {
-  refresh: string;
-}
-
-export interface TokenRefreshResponse {
-  access: string;
-  refresh?: string; // Some APIs return a new refresh token
-}
-
-export interface User {
-  id: number;
-  email: string;
-  username: string;
-  user_id: number;
-}
-
 // Word and Sentence types
 export interface Word {
   id?: number;
@@ -119,51 +70,6 @@ export interface SaveWordbookRequest {
       meaning: string;
     }>;
   }>;
-}
-
-// Category types
-export interface Category {
-  id: number;
-  name: string;
-  value: string;
-  color: string;
-}
-
-export interface CategoriesResponse {
-  success: boolean;
-  data: Category[];
-  message: string;
-}
-
-// Extraction types
-export interface ExtractTextResponse {
-  sentences: string[];
-}
-
-export interface SentenceSplitRequest {
-  text: string;
-}
-
-export interface AnalyzeSentencesRequest {
-  sentences: string[];
-  language: string;
-}
-
-export interface AnalyzedWord {
-  text: string;
-  original_text: string;
-  meaning: string;
-  others: string;
-}
-
-export interface AnalyzedSentence {
-  text: string;
-  meaning: string;
-  words: AnalyzedWord[];
-}
-
-export interface AnalyzeSentencesResponse {
-  selected: AnalyzedSentence[];
 }
 
 // Word History types

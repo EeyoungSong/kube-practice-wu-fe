@@ -44,7 +44,7 @@ import { useCategories } from "@/hooks/use-categories";
 import { useWordbooks } from "@/hooks/use-wordbooks";
 import { useLanguage } from "@/hooks/use-language";
 import type { Wordbook, WordbookResponse } from "@/hooks/use-wordbooks";
-import type { Category } from "@/types/api";
+import type { Category } from "@/types/category";
 import { wordbookService } from "@/services";
 
 interface Note {

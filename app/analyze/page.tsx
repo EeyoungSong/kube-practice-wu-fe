@@ -17,7 +17,7 @@ import {
 import Link from "next/link";
 import { analyzeSentences, wordService, wordbookService } from "@/services";
 import { useLanguage } from "@/hooks/use-language";
-import type { SaveWordbookRequest } from "@/types/api";
+import type { SaveWordbookRequest } from "@/types/word";
 import {
   Tooltip,
   TooltipContent,
