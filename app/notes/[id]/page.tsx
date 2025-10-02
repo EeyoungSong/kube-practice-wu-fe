@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -92,8 +93,32 @@ export default function NoteDetailPage({ params }: PageProps) {
   };
 
   // 문장에서 특정 단어를 하이라이트하는 함수
-  const highlightWordInSentence = (sentence: string, targetWord: string) => {
+  const highlightWordInSentence = (
+    sentence: string,
+    targetWord: string,
+    language: string
+  ) => {
     if (!sentence || !targetWord) return sentence;
+
+    if (language === "chinese") {
+      // 중국어의 경우 직접 문자열 매칭으로 하이라이트
+      const parts = sentence.split(targetWord);
+      if (parts.length === 1) return sentence; // 매칭되는 단어가 없는 경우
+
+      return parts.reduce((acc, part, index) => {
+        if (index === 0) return [part];
+        return [
+          ...acc,
+          <span
+            key={index}
+            className="text-indigo-400 font-bold rounded bg-indigo-900/30 px-1"
+          >
+            {targetWord}
+          </span>,
+          part,
+        ];
+      }, [] as (string | ReactNode)[]);
+    }
 
     // compromise를 사용해 원형 추출
     const getRoot = (word: string) => {
@@ -122,7 +147,10 @@ export default function NoteDetailPage({ params }: PageProps) {
         const root = getRoot(word);
         if (root === targetRoot) {
           return (
-            <span key={index} className="text-indigo-400 font-bold rounded">
+            <span
+              key={index}
+              className="text-indigo-400 font-bold rounded bg-indigo-900/30 px-1"
+            >
               {word}
             </span>
           );
@@ -368,6 +396,9 @@ export default function NoteDetailPage({ params }: PageProps) {
                           <h3 className="text-xl font-bold text-white mb-1">
                             {wordData.text}
                           </h3>
+                          <h3 className="text-md font-bold text-gray-400 mb-1">
+                            {wordData.others ? `${wordData.others}` : ""}
+                          </h3>
                         </div>
                       </div>
 
@@ -393,7 +424,8 @@ export default function NoteDetailPage({ params }: PageProps) {
                                         <p className="font-medium mb-1 text-lg">
                                           {highlightWordInSentence(
                                             sentence.text,
-                                            wordData.text
+                                            wordData.text,
+                                            wordbookData.language
                                           )}
                                         </p>
                                         <p className="text-gray-400 italic mb-2 text-sm">
@@ -480,7 +512,8 @@ export default function NoteDetailPage({ params }: PageProps) {
                                             <p className="font-medium mb-1">
                                               {highlightWordInSentence(
                                                 sentence.text,
-                                                wordData.text
+                                                wordData.text,
+                                                wordbookData.language
                                               )}
                                             </p>
                                             <p className="text-gray-400 italic mb-2">

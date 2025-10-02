@@ -46,6 +46,7 @@ export interface WordbookInfo {
 export interface WordWithSentences {
   id: number;
   text: string;
+  others: string;
   sentences: SentenceWithWordbook[];
 }
 
