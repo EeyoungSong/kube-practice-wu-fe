@@ -4,6 +4,7 @@ export interface ApiOptions {
   headers?: Record<string, string>;
   body?: any;
   requireAuth?: boolean;
+  queryParams?: Record<string, string>;
 }
 
 export interface ApiError {

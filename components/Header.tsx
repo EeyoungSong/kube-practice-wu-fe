@@ -19,6 +19,8 @@ import { BookOpen, Plus, Star, User, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
+import { languages } from "@/types/word";
+import { categoryService } from "@/services";
 
 interface Language {
   value: string;
@@ -38,6 +40,9 @@ export default function Header({
 }: HeaderProps) {
   const router = useRouter();
   const { user, logout } = useAuth();
+  const handleLanguageChange = (language: string) => {
+    setSelectedLanguage(language);
+  };
   return (
     <header className="border-b border-gray-700 bg-gray-900/80 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-4">
@@ -62,7 +67,7 @@ export default function Header({
               <BookOpen className="w-5 h-5 text-indigo-400" />
               <Select
                 value={selectedLanguage}
-                onValueChange={setSelectedLanguage}
+                onValueChange={handleLanguageChange}
               >
                 <SelectTrigger className="w-32 bg-gray-800 border-gray-600 text-white">
                   <SelectValue />

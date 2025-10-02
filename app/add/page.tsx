@@ -33,12 +33,7 @@ import Header from "@/components/Header";
 import { useCategories } from "@/hooks/use-categories";
 import { useLanguage } from "@/hooks/use-language";
 import { extractTextFromImage, splitSentences } from "@/services";
-
-export const languages = [
-  { value: "all", label: "전체 언어" },
-  { value: "english", label: "영어" },
-  { value: "chinese", label: "중국어" },
-];
+import { languages } from "@/types/word";
 
 // 백업용 로컬 문장 분리 함수
 const splitIntoSentencesLocal = (text: string): string[] => {
@@ -87,7 +82,7 @@ export default function CreateNotePage() {
     data: categoriesData,
     isLoading: categoriesLoading,
     error: categoriesError,
-  } = useCategories();
+  } = useCategories(selectedLanguage);
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>

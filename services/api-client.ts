@@ -57,7 +57,19 @@ export class ApiClient {
     options: ApiOptions = {},
     isRetry = false
   ): Promise<T> {
-    const { method = "GET", body } = options;
+    const { method = "GET", body, queryParams } = options;
+
+    // queryParams가 있으면 URL에 추가
+    let fullUrl = `${this.baseURL}${endpoint}`;
+    if (queryParams && Object.keys(queryParams).length > 0) {
+      const urlParams = new URLSearchParams();
+      Object.entries(queryParams).forEach(([key, value]) => {
+        if (value) {
+          urlParams.append(key, value);
+        }
+      });
+      fullUrl += `?${urlParams.toString()}`;
+    }
 
     const config: RequestInit = {
       method,
@@ -76,11 +88,11 @@ export class ApiClient {
     }
 
     // 🔍 디버깅: 요청 로그
-    console.log(`🌐 API Request: ${method} ${this.baseURL}${endpoint}`);
+    console.log(`🌐 API Request: ${method} ${fullUrl}`);
     console.log(`🔑 Headers:`, config.headers);
 
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, config);
+      const response = await fetch(fullUrl, config);
       const responseText = await response.text();
 
       console.log(`📡 Response Status: ${response.status} for ${endpoint}`);

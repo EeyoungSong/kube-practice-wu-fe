@@ -1,4 +1,11 @@
 // Word and Sentence types
+export const languages = [
+  { value: "all", label: "전체 언어" },
+  { value: "english", label: "영어" },
+  { value: "chinese", label: "중국어" },
+  { value: "spanish", label: "스페인어" },
+];
+
 export interface Word {
   id?: number;
   text: string;
@@ -68,6 +75,7 @@ export interface SaveWordbookRequest {
     words: Array<{
       text: string;
       meaning: string;
+      others: string;
     }>;
   }>;
 }

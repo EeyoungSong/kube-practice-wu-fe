@@ -36,7 +36,7 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { languages } from "./add/page";
+import { languages } from "@/types/word";
 import Header from "@/components/Header";
 import dynamic from "next/dynamic";
 
@@ -71,7 +71,7 @@ export default function NotesPage() {
     data: categoriesData,
     isLoading: categoriesLoading,
     error: categoriesError,
-  } = useCategories();
+  } = useCategories(selectedLanguage);
 
   // 단어장 API 호출
   const {

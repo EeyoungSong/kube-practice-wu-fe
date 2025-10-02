@@ -2,9 +2,12 @@ import { apiClient } from "./api-client";
 import { Category, CategoriesResponse } from "@/types/category";
 
 class CategoryService {
-  async getCategories(): Promise<Category[]> {
+  async getCategories(language: string): Promise<Category[]> {
     return apiClient.get<Category[]>("/categories/", {
       requireAuth: true,
+      queryParams: {
+        language: language,
+      },
     });
   }
 

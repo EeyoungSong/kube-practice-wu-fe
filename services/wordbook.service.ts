@@ -49,6 +49,19 @@ class WordbookService {
     });
   }
 
+  async getReviewDataByCategory(
+    language: string,
+    category: number
+  ): Promise<ReviewData> {
+    return apiClient.get<ReviewData>(`/wordbooks/review/`, {
+      requireAuth: true,
+      queryParams: {
+        language: language,
+        category: category,
+      },
+    });
+  }
+
   async submitReview(data: ReviewSubmission): Promise<ReviewResponse> {
     return apiClient.post<ReviewResponse>(
       `/wordbooks/${data.wordbook_id}/review/submit/`,

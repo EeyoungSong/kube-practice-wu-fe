@@ -4,7 +4,7 @@ import QueryProvider from "@/components/providers/query-provider";
 import { AuthProvider } from "@/contexts/auth-context";
 
 export const metadata: Metadata = {
-  title: "v0 App",
+  title: "word-universe",
   description: "Created with v0",
   generator: "v0.dev",
 };
