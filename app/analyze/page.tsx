@@ -24,7 +24,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-interface Word {
+
+interface AnalysisWord {
   id: string;
   original: string;
   word: string;
@@ -36,11 +37,11 @@ interface Word {
   previousContexts?: string[];
 }
 
-interface Sentence {
+interface AnalysisSentence {
   id: string;
   original: string;
   translation?: string;
-  words: Word[];
+  words: AnalysisWord[];
   isAnalyzed: boolean;
   isAnalyzing: boolean;
   isTranslationVisible?: boolean; // 번역 표시 상태 추가
@@ -49,7 +50,7 @@ interface Sentence {
 interface SelectedWordInfo {
   sentenceId: string;
   wordId: string;
-  word: Word;
+  word: AnalysisWord;
 }
 
 // 인터페이스 추가
@@ -129,7 +130,7 @@ export default function AnalyzePage() {
     sentences: inputSentences,
   } = analysisData;
 
-  const [sentences, setSentences] = useState<Sentence[]>([]);
+  const [sentences, setSentences] = useState<AnalysisSentence[]>([]);
   const [selectedWordInfo, setSelectedWordInfo] =
     useState<SelectedWordInfo | null>(null);
   const [wordContext, setWordContext] = useState<WordContext | null>(null);
@@ -157,7 +158,7 @@ export default function AnalyzePage() {
   // 처음 로드 시 문장들을 초기화 (분석하지 않고 그냥 표시만)
   useEffect(() => {
     if (inputSentences && inputSentences.length > 0) {
-      const initialSentences: Sentence[] = inputSentences.map(
+      const initialSentences: AnalysisSentence[] = inputSentences.map(
         (sentence: string, index: number) => ({
           id: `sentence_${index}`,
           original: sentence,
@@ -235,7 +236,7 @@ export default function AnalyzePage() {
           return "기타";
         };
 
-        const analyzedWords: Word[] = analyzedData.words.map(
+        const analyzedWords: AnalysisWord[] = analyzedData.words.map(
           (word, wordIndex) => ({
             id: `word_${sentenceId}_${wordIndex}`,
             original: word.original_text,
@@ -333,7 +334,7 @@ export default function AnalyzePage() {
   };
 
   // 문장을 단어별로 분할하고 클릭 가능하게 만드는 함수
-  const renderClickableWords = (sentence: Sentence) => {
+  const renderClickableWords = (sentence: AnalysisSentence) => {
     if (!sentence.isAnalyzed) {
       return <span className="break-words">{sentence.original}</span>;
     }
