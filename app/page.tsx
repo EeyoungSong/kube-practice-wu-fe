@@ -129,7 +129,7 @@ export default function NotesPage() {
     const trimmedCategory = editForm.category.trim();
 
     if (!trimmedName) {
-      setEditError("노트 이름을 입력해주세요.");
+      setEditError("단어장 이름을 입력해주세요.");
       return;
     }
 
@@ -157,7 +157,7 @@ export default function NotesPage() {
         const fallbackMessage =
           error instanceof Error
             ? error.message
-            : "노트 업데이트에 실패했습니다. 다시 시도해주세요.";
+            : "단어장 업데이트에 실패했습니다. 다시 시도해주세요.";
         setEditError(fallbackMessage);
       }
     } finally {
@@ -296,7 +296,7 @@ export default function NotesPage() {
           {/* Filters */}
           <div className="mb-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-start">
-              {/* 상단: 보기 모드 전환과 새 노트 만들기 버튼 */}
+              {/* 상단: 보기 모드 전환과 새 단어장 만들기 버튼 */}
               <div className="flex flex-row justify-between items-center">
                 {/* 보기 모드 전환 */}
                 <div className="flex border border-gray-600 rounded-lg overflow-hidden">
@@ -326,12 +326,12 @@ export default function NotesPage() {
                   </Button>
                 </div>
 
-                {/* 새 노트 만들기 버튼 */}
+                {/* 새 단어장 만들기 버튼 */}
                 <Link href="/add">
                   <Button className="bg-indigo-600 hover:bg-indigo-700 text-white m-4">
                     <Plus className="w-4 h-4 m-2" />
-                    <span className="hidden sm:inline">새 노트 만들기</span>
-                    <span className="sm:hidden">새 노트</span>
+                    <span className="hidden sm:inline">새 단어장 만들기</span>
+                    <span className="sm:hidden">새 단어장</span>
                   </Button>
                 </Link>
               </div>
@@ -383,7 +383,7 @@ export default function NotesPage() {
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
-                        placeholder="노트 이름으로 검색..."
+                        placeholder="단어장 이름으로 검색..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10 bg-gray-800 border-none text-white placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -468,7 +468,7 @@ export default function NotesPage() {
                               }}
                             >
                               <Edit className="w-4 h-4 mr-2" />
-                              노트 편집
+                              단어장 편집
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-red-400 hover:bg-gray-700 hover:text-red-300 cursor-pointer"
@@ -479,7 +479,7 @@ export default function NotesPage() {
                               }}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
-                              노트 삭제
+                              단어장 삭제
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -602,7 +602,7 @@ export default function NotesPage() {
                   </p>
                   <Link href="/add">
                     <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
-                      <Plus className="w-4 h-4 mr-2" />첫 번째 노트 만들기
+                      <Plus className="w-4 h-4 mr-2" />첫 번째 단어장 만들기
                     </Button>
                   </Link>
                 </div>
@@ -610,21 +610,21 @@ export default function NotesPage() {
             </div>
           )}
 
-          {/* 목록보기에서 노트가 없을 때 */}
+          {/* 목록보기에서 단어장가 없을 때 */}
           {viewMode === "grid" &&
             filteredNotes.length === 0 &&
             !wordbooksLoading && (
               <div className="text-center py-12">
                 <BookOpen className="w-12 h-12 text-gray-500 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-white mb-2">
-                  노트가 없습니다
+                  단어장가 없습니다
                 </h3>
                 <p className="text-gray-400 mb-4">
-                  새로운 노트를 만들어 단어 학습을 시작해보세요!
+                  새로운 단어장를 만들어 단어 학습을 시작해보세요!
                 </p>
                 <Link href="/add">
                   <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
-                    <Plus className="w-4 h-4 mr-2" />첫 번째 노트 만들기
+                    <Plus className="w-4 h-4 mr-2" />첫 번째 단어장 만들기
                   </Button>
                 </Link>
               </div>
@@ -634,9 +634,9 @@ export default function NotesPage() {
       <Dialog open={isEditDialogOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="bg-gray-900 border-gray-700 text-white">
           <DialogHeader>
-            <DialogTitle>노트 편집</DialogTitle>
+            <DialogTitle>단어장 편집</DialogTitle>
             <DialogDescription className="text-gray-400">
-              노트 이름과 카테고리를 업데이트할 수 있습니다.
+              단어장 이름과 카테고리를 업데이트할 수 있습니다.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleEditSubmit} className="space-y-4">
@@ -645,7 +645,7 @@ export default function NotesPage() {
                 htmlFor="edit-note-name"
                 className="text-gray-200 font-medium"
               >
-                노트 이름
+                단어장 이름
               </Label>
               <Input
                 id="edit-note-name"
@@ -660,7 +660,7 @@ export default function NotesPage() {
                   }
                 }}
                 className="bg-gray-800 border border-gray-700 text-white focus-visible:ring-0 focus-visible:ring-offset-0"
-                placeholder="노트 이름을 입력하세요"
+                placeholder="단어장 이름을 입력하세요"
                 disabled={isSavingEdit}
               />
             </div>
