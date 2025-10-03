@@ -11,6 +11,7 @@ export interface Word {
   text: string;
   original_text?: string;
   meaning: string;
+  pos: string;
   others?: string;
 }
 

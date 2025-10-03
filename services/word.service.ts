@@ -10,6 +10,15 @@ class WordService {
     });
   }
 
+  async getWordHistoryByWord(word: string): Promise<WordHistory> {
+    return apiClient.get<WordHistory>(
+      `/words/context/?word=${encodeURIComponent(word)}`,
+      {
+        requireAuth: true,
+      }
+    );
+  }
+
   async searchWords(query: string): Promise<any> {
     return apiClient.get<any>("/words/search/", {
       requireAuth: true,
