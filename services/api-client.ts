@@ -218,6 +218,14 @@ export class ApiClient {
     return this.request<T>(endpoint, { ...options, method: "DELETE" });
   }
 
+  async patch<T>(
+    endpoint: string,
+    body?: any,
+    options?: Omit<ApiOptions, "method" | "body">
+  ): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: "PATCH", body });
+  }
+
   // FormData 업로드를 위한 특별한 메서드
   async upload<T>(
     endpoint: string,

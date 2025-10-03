@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +39,7 @@ import Link from "next/link";
 import { languages } from "@/types/word";
 import Header from "@/components/Header";
 import dynamic from "next/dynamic";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useCategories } from "@/hooks/use-categories";
 import { useWordbooks } from "@/hooks/use-wordbooks";
@@ -46,6 +47,16 @@ import { useLanguage } from "@/hooks/use-language";
 import type { Wordbook, WordbookResponse } from "@/hooks/use-wordbooks";
 import type { Category } from "@/types/category";
 import { wordbookService } from "@/services";
+import { APIError } from "@/services/api-client";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Note {
   id: string;
@@ -62,6 +73,7 @@ export default function NotesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("전체 카테고리");
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "timeline"
+  const queryClient = useQueryClient();
 
   // 전역 언어 상태 관리
   const { selectedLanguage, setSelectedLanguage, isLoaded } = useLanguage();
@@ -79,6 +91,79 @@ export default function NotesPage() {
     isLoading: wordbooksLoading,
     error: wordbooksError,
   } = useWordbooks();
+
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [editForm, setEditForm] = useState<{ name: string; category: string }>({
+    name: "",
+    category: "",
+  });
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const openEditDialog = (note: Note) => {
+    setEditingNote(note);
+    setEditForm({
+      name: note.name,
+      category: note.category,
+    });
+    setEditError(null);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      setEditingNote(null);
+      setEditForm({ name: "", category: "" });
+      setEditError(null);
+      setIsSavingEdit(false);
+    }
+    setIsEditDialogOpen(open);
+  };
+
+  const handleEditSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingNote) return;
+
+    const trimmedName = editForm.name.trim();
+    const trimmedCategory = editForm.category.trim();
+
+    if (!trimmedName) {
+      setEditError("노트 이름을 입력해주세요.");
+      return;
+    }
+
+    if (!trimmedCategory) {
+      setEditError("카테고리를 선택해주세요.");
+      return;
+    }
+
+    try {
+      setIsSavingEdit(true);
+      setEditError(null);
+      await wordbookService.updateWordbook(Number(editingNote.id), {
+        name: trimmedName,
+        category: trimmedCategory,
+      });
+      await queryClient.invalidateQueries({ queryKey: ["wordbooks"] });
+      setIsEditDialogOpen(false);
+      setEditingNote(null);
+      setEditForm({ name: "", category: "" });
+    } catch (error) {
+      console.error("Failed to update wordbook:", error);
+      if (error instanceof APIError && error.detail) {
+        setEditError(error.detail);
+      } else {
+        const fallbackMessage =
+          error instanceof Error
+            ? error.message
+            : "노트 업데이트에 실패했습니다. 다시 시도해주세요.";
+        setEditError(fallbackMessage);
+      }
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
 
   useEffect(() => {
     console.log(wordbooksData);
@@ -379,7 +464,7 @@ export default function NotesPage() {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log("편집:", note.id);
+                                openEditDialog(note);
                               }}
                             >
                               <Edit className="w-4 h-4 mr-2" />
@@ -546,6 +631,121 @@ export default function NotesPage() {
             )}
         </div>
       </main>
+      <Dialog open={isEditDialogOpen} onOpenChange={handleDialogOpenChange}>
+        <DialogContent className="bg-gray-900 border-gray-700 text-white">
+          <DialogHeader>
+            <DialogTitle>노트 편집</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              노트 이름과 카테고리를 업데이트할 수 있습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label
+                htmlFor="edit-note-name"
+                className="text-gray-200 font-medium"
+              >
+                노트 이름
+              </Label>
+              <Input
+                id="edit-note-name"
+                value={editForm.name}
+                onChange={(event) => {
+                  setEditForm((prev) => ({
+                    ...prev,
+                    name: event.target.value,
+                  }));
+                  if (editError) {
+                    setEditError(null);
+                  }
+                }}
+                className="bg-gray-800 border border-gray-700 text-white focus-visible:ring-0 focus-visible:ring-offset-0"
+                placeholder="노트 이름을 입력하세요"
+                disabled={isSavingEdit}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label
+                htmlFor="edit-note-category"
+                className="text-gray-200 font-medium"
+              >
+                카테고리
+              </Label>
+              <Select
+                value={editForm.category || undefined}
+                onValueChange={(value) => {
+                  setEditForm((prev) => ({ ...prev, category: value }));
+                  if (editError) {
+                    setEditError(null);
+                  }
+                }}
+                disabled={categoriesLoading || isSavingEdit}
+              >
+                <SelectTrigger
+                  id="edit-note-category"
+                  className="bg-gray-800 border border-gray-700 text-white focus:ring-0 focus:ring-offset-0"
+                >
+                  <SelectValue
+                    placeholder={
+                      categoriesLoading
+                        ? "카테고리 로딩 중..."
+                        : "카테고리를 선택하세요"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border border-gray-700 text-white">
+                  {categoriesData?.map((category: Category) => (
+                    <SelectItem
+                      key={category.id}
+                      value={category.name}
+                      className="text-white hover:bg-gray-700"
+                    >
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                  {!categoriesLoading &&
+                    editForm.category &&
+                    !categoriesData?.some(
+                      (category: Category) =>
+                        category.name === editForm.category
+                    ) && (
+                      <SelectItem
+                        key={`custom-${editForm.category}`}
+                        value={editForm.category}
+                        className="text-white hover:bg-gray-700"
+                      >
+                        {editForm.category}
+                      </SelectItem>
+                    )}
+                </SelectContent>
+              </Select>
+            </div>
+            {editError && (
+              <p className="text-sm text-red-400" role="alert">
+                {editError}
+              </p>
+            )}
+            <DialogFooter className="gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="border-gray-600 text-gray-200 hover:bg-gray-800"
+                onClick={() => handleDialogOpenChange(false)}
+                disabled={isSavingEdit}
+              >
+                취소
+              </Button>
+              <Button
+                type="submit"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                disabled={isSavingEdit}
+              >
+                {isSavingEdit ? "저장 중..." : "변경 사항 저장"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

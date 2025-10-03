@@ -81,6 +81,11 @@ export interface SaveWordbookRequest {
   }>;
 }
 
+export interface UpdateWordbookRequest {
+  name: string;
+  category: string;
+}
+
 // Word History types
 export interface WordHistory {
   word_id: string;

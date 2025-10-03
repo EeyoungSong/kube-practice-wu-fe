@@ -6,6 +6,7 @@ import {
   ReviewData,
   ReviewSubmission,
   ReviewResponse,
+  UpdateWordbookRequest,
 } from "@/types/word";
 
 class WordbookService {
@@ -35,9 +36,9 @@ class WordbookService {
 
   async updateWordbook(
     id: number,
-    data: Partial<SaveWordbookRequest>
+    data: Partial<UpdateWordbookRequest>
   ): Promise<Wordbook> {
-    return apiClient.put<Wordbook>(`/wordbooks/${id}/`, data, {
+    return apiClient.patch<Wordbook>(`/wordbooks/${id}/`, data, {
       requireAuth: true,
     });
   }
@@ -49,7 +50,7 @@ class WordbookService {
     });
   }
 
-  async getReviewDataByCategory(
+  async getAllReviewData(
     language: string,
     category: number
   ): Promise<ReviewData> {
@@ -57,7 +58,7 @@ class WordbookService {
       requireAuth: true,
       queryParams: {
         language: language,
-        category: category,
+        category: category.toString(),
       },
     });
   }
