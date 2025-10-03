@@ -404,11 +404,11 @@ export default function AnalyzePage() {
     }
 
     const saveData: SaveWordbookRequest = {
-      wordbook_name: noteName,
-      wordbook_category: category,
-      wordbook_language: language,
+      name: noteName,
+      category: category,
+      language: language,
       input_type: inputType,
-      selected: sentencesWithSelectedWords.map((sentence) => ({
+      sentences: sentencesWithSelectedWords.map((sentence) => ({
         text: sentence.original,
         meaning: sentence.translation || "",
         words: sentence.words

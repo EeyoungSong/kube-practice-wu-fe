@@ -66,11 +66,11 @@ export interface WordbookResponse {
 }
 
 export interface SaveWordbookRequest {
-  wordbook_name: string;
-  wordbook_category: string;
-  wordbook_language: string;
+  name: string;
+  category: string;
+  language: string;
   input_type: "image" | "text";
-  selected: Array<{
+  sentences: Array<{
     text: string;
     meaning: string;
     words: Array<{
