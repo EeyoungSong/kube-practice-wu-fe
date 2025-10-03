@@ -192,7 +192,7 @@ export default function ReviewPage({ params }: { params: { id: string } }) {
               <p className="text-gray-400">{error}</p>
               <Link href={`/notes/${params.id}`}>
                 <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                  노트로 돌아가기
+                  단어장로 돌아가기
                 </Button>
               </Link>
             </div>
@@ -216,7 +216,7 @@ export default function ReviewPage({ params }: { params: { id: string } }) {
               <p className="text-gray-400">먼저 단어를 학습해주세요.</p>
               <Link href={`/notes/${params.id}`}>
                 <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                  노트로 돌아가기
+                  단어장로 돌아가기
                 </Button>
               </Link>
             </div>
@@ -266,7 +266,7 @@ export default function ReviewPage({ params }: { params: { id: string } }) {
                   variant="outline"
                 >
                   <BookOpen className="w-4 h-4 mr-2" />
-                  노트로 돌아가기
+                  단어장로 돌아가기
                 </Button>
               </Link>
 
@@ -309,7 +309,7 @@ export default function ReviewPage({ params }: { params: { id: string } }) {
                 className="text-white hover:bg-gray-700"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                노트로 돌아가기
+                단어장로 돌아가기
               </Button>
             </Link>
             <div className="text-center">

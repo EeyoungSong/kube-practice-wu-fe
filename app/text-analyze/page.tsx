@@ -96,7 +96,7 @@ export default function TextAnalyzePage() {
 
       const result = await extractionService.analyzeSentences(
         selectedSentenceTexts,
-        'ko' // TODO: Add language selection in UI
+        "ko" // TODO: Add language selection in UI
       );
 
       // API 응답을 컴포넌트 형식에 맞게 변환
@@ -157,7 +157,7 @@ export default function TextAnalyzePage() {
     );
   };
 
-  // 노트에 저장
+  // 단어장에 저장
   const handleSaveToNote = async () => {
     const sentencesWithSelectedWords = analyzedSentences
       .map((sentence) => ({
@@ -173,7 +173,7 @@ export default function TextAnalyzePage() {
 
     // 여기에 실제 저장 로직 구현
     console.log("저장할 데이터:", sentencesWithSelectedWords);
-    alert(`${getSelectedWordsCount()}개 단어가 노트에 저장되었습니다!`);
+    alert(`${getSelectedWordsCount()}개 단어가 단어장에 저장되었습니다!`);
   };
 
   // 다시 시작
@@ -344,7 +344,7 @@ export default function TextAnalyzePage() {
                 disabled={getSelectedWordsCount() === 0}
                 className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
               >
-                노트에 저장하기 ({getSelectedWordsCount()}개 단어)
+                단어장에 저장하기 ({getSelectedWordsCount()}개 단어)
               </Button>
               <Button
                 onClick={handleReset}

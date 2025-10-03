@@ -307,7 +307,7 @@ export default function CreateNotePage() {
                                 htmlFor="noteName"
                                 className="text-gray-300"
                               >
-                                노트 이름
+                                단어장 이름
                               </Label>
                               <Input
                                 id="noteName"

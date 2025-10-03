@@ -679,7 +679,7 @@ export default function AnalyzePage() {
                     className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-8 text-white"
                   >
                     <Star className="w-4 h-4 mr-2" />
-                    노트에 저장하기 ({getSelectedWordsCount()}개 단어)
+                    단어장에 저장하기 ({getSelectedWordsCount()}개 단어)
                   </Button>
                 </div>
               </div>
