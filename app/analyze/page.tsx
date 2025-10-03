@@ -36,6 +36,7 @@ interface AnalysisWord {
   meaning: string;
   others: string;
   pos: string;
+  memo?: string; // 단어별 메모 추가
   isSelected: boolean;
   isKnown?: boolean;
   previousContexts?: string[];
@@ -49,6 +50,7 @@ interface AnalysisSentence {
   isAnalyzed: boolean;
   isAnalyzing: boolean;
   isTranslationVisible?: boolean; // 번역 표시 상태 추가
+  memo?: string; // 문장별 메모 추가
 }
 
 interface SelectedWordInfo {
@@ -111,6 +113,7 @@ export default function AnalyzePage() {
           category: data.category,
           sentences: data.sentences,
           analyzedSentences: data.analyzedSentences || [], // 분석된 문장들 추가
+          sentenceMemos: data.sentenceMemos || {}, // 문장별 메모 복원
         };
       }
     }
@@ -127,6 +130,7 @@ export default function AnalyzePage() {
       category: searchParams.get("category") || "일반",
       sentences: searchParams.get("sentences")?.split(" | ") || [],
       analyzedSentences: [], // 기본값
+      sentenceMemos: {}, // 기본값
     };
   }, [analysisId, searchParams]);
 
@@ -137,6 +141,7 @@ export default function AnalyzePage() {
     category,
     sentences: inputSentences,
     analyzedSentences,
+    sentenceMemos: savedSentenceMemos,
   } = analysisData;
 
   const [sentences, setSentences] = useState<AnalysisSentence[]>([]);
@@ -148,7 +153,18 @@ export default function AnalyzePage() {
   const [editingWordValues, setEditingWordValues] = useState({
     meaning: "",
     others: "",
+    memo: "",
   });
+  const [sentenceMemos, setSentenceMemos] = useState<Record<string, string>>(
+    {}
+  ); // 문장별 메모
+
+  // 저장된 메모 데이터로 상태 초기화
+  useEffect(() => {
+    if (savedSentenceMemos && Object.keys(savedSentenceMemos).length > 0) {
+      setSentenceMemos(savedSentenceMemos);
+    }
+  }, [savedSentenceMemos]);
 
   useEffect(() => {
     const fetchWordContext = async () => {
@@ -227,6 +243,7 @@ export default function AnalyzePage() {
           setEditingWordValues({
             meaning: word.meaning,
             others: word.others,
+            memo: word.memo || "",
           });
         }
       }
@@ -245,11 +262,12 @@ export default function AnalyzePage() {
         setEditingWordValues({
           meaning: selectedWordInfo.word.meaning,
           others: selectedWordInfo.word.others,
+          memo: selectedWordInfo.word.memo || "",
         });
       }
     } else {
       setIsEditingWord(false);
-      setEditingWordValues({ meaning: "", others: "" });
+      setEditingWordValues({ meaning: "", others: "", memo: "" });
     }
   }, [selectedWordInfo, isEditingWord]);
 
@@ -263,6 +281,8 @@ export default function AnalyzePage() {
         const data = JSON.parse(currentData);
         // 분석된 문장들을 저장
         data.analyzedSentences = updatedSentences.filter((s) => s.isAnalyzed);
+        // 메모 데이터도 저장
+        data.sentenceMemos = sentenceMemos;
         window.sessionStorage?.setItem(
           `analysis_${analysisId}`,
           JSON.stringify(data)
@@ -368,6 +388,25 @@ export default function AnalyzePage() {
     });
   };
 
+  // 문장별 메모 업데이트 함수
+  const updateSentenceMemo = (sentenceId: string, memo: string) => {
+    setSentenceMemos((prev) => ({
+      ...prev,
+      [sentenceId]: memo,
+    }));
+
+    setSentences((prev) => {
+      const updatedSentences = prev.map((sentence) =>
+        sentence.id === sentenceId ? { ...sentence, memo } : sentence
+      );
+
+      // sessionStorage에 저장
+      saveAnalysisToSession(updatedSentences);
+
+      return updatedSentences;
+    });
+  };
+
   const toggleWordSelection = (sentenceId: string, wordId: string) => {
     console.log("toggleWordSelection", sentenceId, wordId);
     setSentences((prev) => {
@@ -396,12 +435,13 @@ export default function AnalyzePage() {
     setEditingWordValues({
       meaning: selectedWordInfo.word.meaning,
       others: selectedWordInfo.word.others,
+      memo: selectedWordInfo.word.memo || "",
     });
     setIsEditingWord(true);
   };
 
   const handleWordFieldChange = (
-    field: "meaning" | "others",
+    field: "meaning" | "others" | "memo",
     value: string
   ) => {
     console.log("handleWordFieldChange", field, value);
@@ -416,6 +456,7 @@ export default function AnalyzePage() {
     setEditingWordValues({
       meaning: selectedWordInfo.word.meaning,
       others: selectedWordInfo.word.others,
+      memo: selectedWordInfo.word.memo || "",
     });
     setIsEditingWord(false);
   };
@@ -436,6 +477,7 @@ export default function AnalyzePage() {
                       ...word,
                       meaning: editingWordValues.meaning,
                       others: editingWordValues.others,
+                      memo: editingWordValues.memo,
                     }
                   : word
               ),
@@ -551,15 +593,20 @@ export default function AnalyzePage() {
       sentences: sentencesWithSelectedWords.map((sentence) => ({
         text: sentence.original,
         meaning: sentence.translation || "",
+        memo: sentence.memo || undefined, // 문장별 메모
         words: sentence.words
           .filter((word) => word.isSelected)
           .map((word) => ({
             text: word.word,
             meaning: word.meaning,
             others: word.others,
+            pos: word.pos,
+            memo: word.memo,
           })),
       })),
     };
+
+    console.log("저장할 데이터:", saveData);
 
     await wordbookService.saveWordbook(saveData);
 
@@ -673,6 +720,26 @@ export default function AnalyzePage() {
                               )}
                             </div>
                           )}
+
+                          {/* 메모 섹션 */}
+                          <div className="space-y-2 mt-3 pt-3 border-t border-gray-600">
+                            <label className="text-sm text-gray-400 font-medium">
+                              메모
+                            </label>
+                            <Textarea
+                              value={
+                                sentenceMemos[sentence.id] ||
+                                sentence.memo ||
+                                ""
+                              }
+                              onChange={(e) =>
+                                updateSentenceMemo(sentence.id, e.target.value)
+                              }
+                              placeholder="이 문장에 대한 메모를 작성하세요..."
+                              className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 resize-none"
+                              rows={2}
+                            />
+                          </div>
                         </div>
                       </CardHeader>
                     </Card>
@@ -754,9 +821,6 @@ export default function AnalyzePage() {
                                         placeholder="뜻을 입력하세요"
                                         className="bg-gray-800 border-gray-600 text-white"
                                       />
-                                      <p className="text-xs text-gray-300">
-                                        뜻을 수정해서 저장할 수 있습니다.
-                                      </p>
                                     </div>
                                     <div className="space-y-1">
                                       <Textarea
@@ -769,11 +833,22 @@ export default function AnalyzePage() {
                                         }
                                         placeholder="성조나 추가 정보를 입력하세요"
                                         className="bg-gray-800 border-gray-600 text-white"
-                                        rows={3}
+                                        rows={2}
                                       />
-                                      <p className="text-xs text-gray-300">
-                                        발음, 성조 등 추가 정보를 입력하세요.
-                                      </p>
+                                    </div>
+                                    <div className="space-y-1">
+                                      <Textarea
+                                        value={editingWordValues.memo}
+                                        onChange={(event) =>
+                                          handleWordFieldChange(
+                                            "memo",
+                                            event.target.value
+                                          )
+                                        }
+                                        placeholder="개인적인 학습 메모를 기록하세요."
+                                        className="bg-gray-800 border-gray-600 text-white"
+                                        rows={2}
+                                      />
                                     </div>
                                   </div>
                                 ) : (
@@ -784,6 +859,16 @@ export default function AnalyzePage() {
                                     <p className="text-xs text-gray-200 whitespace-pre-line">
                                       {selectedWordInfo.word.others || ""}
                                     </p>
+                                    {selectedWordInfo.word.memo && (
+                                      <div className="mt-2 p-2 bg-blue-900/20 rounded border-l-4 border-blue-500">
+                                        <p className="text-xs text-blue-300 font-medium mb-1">
+                                          개인 메모
+                                        </p>
+                                        <p className="text-xs text-blue-200 whitespace-pre-line">
+                                          {selectedWordInfo.word.memo}
+                                        </p>
+                                      </div>
+                                    )}
                                   </>
                                 )}
                               </div>
@@ -990,7 +1075,19 @@ export default function AnalyzePage() {
                                   }
                                   placeholder="성조나 추가 정보를 입력하세요"
                                   className="bg-gray-800 border-gray-600 text-white"
-                                  rows={4}
+                                  rows={2}
+                                />
+                                <Textarea
+                                  value={editingWordValues.memo}
+                                  onChange={(event) =>
+                                    handleWordFieldChange(
+                                      "memo",
+                                      event.target.value
+                                    )
+                                  }
+                                  placeholder="이 단어에 대한 개인 메모를 입력하세요"
+                                  className="bg-gray-800 border-gray-600 text-white"
+                                  rows={2}
                                 />
                               </div>
                             ) : (
@@ -1001,6 +1098,16 @@ export default function AnalyzePage() {
                                 <p className="text-xs text-gray-200 whitespace-pre-line">
                                   {selectedWordInfo.word.others || ""}
                                 </p>
+                                {selectedWordInfo.word.memo && (
+                                  <div className="mt-2 p-2 bg-blue-900/20 rounded border-l-4 border-blue-500">
+                                    <p className="text-xs text-blue-300 font-medium mb-1">
+                                      개인 메모
+                                    </p>
+                                    <p className="text-xs text-blue-200 whitespace-pre-line">
+                                      {selectedWordInfo.word.memo}
+                                    </p>
+                                  </div>
+                                )}
                               </>
                             )}
                           </div>

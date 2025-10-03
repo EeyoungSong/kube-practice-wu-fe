@@ -71,13 +71,16 @@ export interface SaveWordbookRequest {
   category: string;
   language: string;
   input_type: "image" | "text";
+  memo?: string; // 전체 노트 메모
   sentences: Array<{
     text: string;
     meaning: string;
+    memo?: string; // 문장별 메모
     words: Array<{
       text: string;
       meaning: string;
       others: string;
+      pos: string;
     }>;
   }>;
 }
