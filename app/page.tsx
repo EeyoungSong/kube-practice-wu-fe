@@ -38,6 +38,7 @@ import {
 import Link from "next/link";
 import { languages } from "@/types/word";
 import Header from "@/components/Header";
+import ReviewFloatingButton from "@/components/ReviewFloatingButton";
 import dynamic from "next/dynamic";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -418,7 +419,7 @@ export default function NotesPage() {
                 <Link href={`/notes/${note.id}`} key={note.id}>
                   <Card
                     key={note.id}
-                    className="border-2 border-gray-700 bg-transparent hover:border-indigo-500 transition-all hover:shadow-lg"
+                    className="bg-gray-700/30 border-gray-700/30 hover:border-indigo-700 hover:shadow-lg"
                   >
                     <CardHeader>
                       <div className="flex items-start justify-between">
@@ -746,6 +747,9 @@ export default function NotesPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Review Floating Button */}
+      <ReviewFloatingButton />
     </div>
   );
 }

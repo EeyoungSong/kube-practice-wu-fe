@@ -7,6 +7,12 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   ArrowLeft,
   BookOpen,
   Star,
@@ -18,6 +24,7 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
@@ -38,6 +45,11 @@ export default function NoteDetailPage({ params }: PageProps) {
   const [activeTab, setActiveTab] = useState("words");
   const [wordbookId, setWordbookId] = useState<string | null>(null);
   const [expandedWords, setExpandedWords] = useState<Set<number>>(new Set());
+  const [selectedWord, setSelectedWord] = useState<WordWithSentences | null>(
+    null
+  );
+  const [isWordModalOpen, setIsWordModalOpen] = useState(false);
+  const [expandedMemos, setExpandedMemos] = useState<Set<number>>(new Set());
 
   const toggleWordExpanded = (wordId: number) => {
     setExpandedWords((prev) => {
@@ -46,6 +58,29 @@ export default function NoteDetailPage({ params }: PageProps) {
         newSet.delete(wordId);
       } else {
         newSet.add(wordId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleWordClick = (wordData: WordWithSentences) => {
+    setSelectedWord(wordData);
+    setIsWordModalOpen(true);
+  };
+
+  const handleCloseWordModal = () => {
+    setIsWordModalOpen(false);
+    setSelectedWord(null);
+    setExpandedMemos(new Set()); // 모달 닫을 때 메모 상태 초기화
+  };
+
+  const toggleMemoExpanded = (sentenceId: number) => {
+    setExpandedMemos((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(sentenceId)) {
+        newSet.delete(sentenceId);
+      } else {
+        newSet.add(sentenceId);
       }
       return newSet;
     });
@@ -275,10 +310,9 @@ export default function NoteDetailPage({ params }: PageProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-white hover:bg-gray-700"
+                  className="text-white hover:text-indigo-400 hover:bg-transparent"
                 >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  목록으로
+                  <ArrowLeft className="w-8 h-8 mr-2" />
                 </Button>
               </Link>
               <div>
@@ -317,7 +351,7 @@ export default function NoteDetailPage({ params }: PageProps) {
         <div className="max-w-6xl mx-auto">
           {/* Content Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 bg-gray-800 border-gray-700">
+            <TabsList className="grid w-full grid-cols-2 bg-gray-700/30 border-gray-700/30">
               <TabsTrigger
                 value="words"
                 className="flex items-center gap-2 text-white data-[state=active]:bg-gray-700"
@@ -342,7 +376,7 @@ export default function NoteDetailPage({ params }: PageProps) {
                 return (
                   <Card
                     key={sentence.id}
-                    className="bg-gray-800 border-gray-700"
+                    className="bg-gray-700/30 border-gray-700/30"
                   >
                     <CardHeader>
                       <div className="space-y-2">
@@ -388,7 +422,8 @@ export default function NoteDetailPage({ params }: PageProps) {
                 (wordData: WordWithSentences) => (
                   <Card
                     key={wordData.id}
-                    className="bg-gray-800 border-gray-700"
+                    className="bg-gray-700/30 border-gray-700/30 cursor-pointer hover:border-indigo-500 transition-colors"
+                    onClick={() => handleWordClick(wordData)}
                   >
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
@@ -441,19 +476,6 @@ export default function NoteDetailPage({ params }: PageProps) {
                                         </div>
                                       </div>
                                     </div>
-
-                                    {sentence.last_reviewed_at && (
-                                      <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
-                                        <Clock className="w-3 h-3" />
-                                        마지막 복습:{" "}
-                                        {new Date(
-                                          sentence.last_reviewed_at
-                                        ).toLocaleDateString("ko-KR")}
-                                        <span className="mx-2">•</span>
-                                        복습 횟수: {sentence.review_count}회
-                                        <span className="mx-2">•</span>
-                                      </div>
-                                    )}
                                   </div>
                                 )
                               )}
@@ -469,7 +491,10 @@ export default function NoteDetailPage({ params }: PageProps) {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => toggleWordExpanded(wordData.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleWordExpanded(wordData.id);
+                              }}
                               className="text-gray-400 hover:text-white p-0 h-auto font-normal"
                             >
                               <div className="flex items-center gap-2">
@@ -566,6 +591,260 @@ export default function NoteDetailPage({ params }: PageProps) {
           </Tabs>
         </div>
       </main>
+
+      {/* 단어 상세 정보 모달 */}
+      <Dialog open={isWordModalOpen} onOpenChange={setIsWordModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-gray-800 border-gray-800">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
+                <span>{selectedWord?.text}</span>
+                {selectedWord?.others && (
+                  <span className="text-lg text-gray-400">
+                    {selectedWord.others}
+                  </span>
+                )}
+              </DialogTitle>
+            </div>
+          </DialogHeader>
+
+          {selectedWord && (
+            <div className="space-y-6 mt-4 my-10">
+              {/* 현재 단어장에서의 사용 */}
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <BookOpen className="w-5 h-5" />
+                  현재 단어장에서의 사용
+                </h3>
+                <div className="space-y-4">
+                  {selectedWord.sentences
+                    .filter(
+                      (sentence: SentenceWithWordbook) =>
+                        sentence.is_current_wordbook
+                    )
+                    .map((sentence: SentenceWithWordbook, index: number) => (
+                      <div
+                        key={sentence.id}
+                        className="bg-gray-700 p-4 rounded-lg border-l-4 border-indigo-500"
+                      >
+                        <div className="space-y-3">
+                          <p className="text-lg font-medium text-white leading-relaxed">
+                            {highlightWordInSentence(
+                              sentence.text,
+                              selectedWord.text,
+                              wordbookData.language
+                            )}
+                          </p>
+                          <p className="text-gray-300 italic">
+                            "{sentence.meaning}"
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant="outline"
+                              className="border-indigo-400 text-indigo-300"
+                            >
+                              {sentence.word_meaning_in_context}
+                            </Badge>
+                            {sentence.word_pos_in_context && (
+                              <Badge
+                                variant="outline"
+                                className="border-gray-500 text-gray-300 text-xs"
+                              >
+                                {sentence.word_pos_in_context}
+                              </Badge>
+                            )}
+                          </div>
+                          {sentence.word_memo_in_context && (
+                            <div className="space-y-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (sentence.id)
+                                    toggleMemoExpanded(sentence.id);
+                                }}
+                                className="flex items-center gap-1 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+                              >
+                                {sentence.id &&
+                                expandedMemos.has(sentence.id) ? (
+                                  <>
+                                    <ChevronUp className="w-4 h-4" />
+                                    메모 숨기기
+                                  </>
+                                ) : (
+                                  <>
+                                    <ChevronDown className="w-4 h-4" />
+                                    메모 보기
+                                  </>
+                                )}
+                              </button>
+                              {sentence.id &&
+                                expandedMemos.has(sentence.id) && (
+                                  <p className="text-gray-400 pl-5 text-sm whitespace-pre-line">
+                                    {sentence.word_memo_in_context}
+                                  </p>
+                                )}
+                            </div>
+                          )}
+
+                          {sentence.last_reviewed_at && (
+                            <div className="flex items-center gap-4 text-sm text-gray-400 pt-2 border-t border-gray-600">
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-4 h-4" />
+                                마지막 복습:{" "}
+                                {new Date(
+                                  sentence.last_reviewed_at
+                                ).toLocaleDateString("ko-KR")}
+                              </div>
+                              <div>복습 횟수: {sentence.review_count}회</div>
+                              <div className="flex items-center gap-1">
+                                {sentence.is_last_review_successful ? (
+                                  <>
+                                    <CheckCircle className="w-4 h-4 text-green-400" />
+                                    <span className="text-green-400">성공</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <XCircle className="w-4 h-4 text-red-400" />
+                                    <span className="text-red-400">실패</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              {/* 다른 단어장에서의 사용 */}
+              {selectedWord.sentences.some(
+                (sentence: SentenceWithWordbook) =>
+                  !sentence.is_current_wordbook
+              ) && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <Network className="w-5 h-5" />
+                    다른 단어장에서의 사용 (
+                    {
+                      selectedWord.sentences.filter(
+                        (s: SentenceWithWordbook) => !s.is_current_wordbook
+                      ).length
+                    }
+                    개)
+                  </h3>
+                  <div className="space-y-4">
+                    {selectedWord.sentences
+                      .filter(
+                        (sentence: SentenceWithWordbook) =>
+                          !sentence.is_current_wordbook
+                      )
+                      .map((sentence: SentenceWithWordbook, index: number) => (
+                        <div
+                          key={sentence.id}
+                          className="bg-gray-600 p-4 rounded-lg border-l-4 border-gray-400"
+                        >
+                          <div className="space-y-3">
+                            <p className="text-lg font-medium text-white leading-relaxed">
+                              {highlightWordInSentence(
+                                sentence.text,
+                                selectedWord.text,
+                                wordbookData.language
+                              )}
+                            </p>
+                            <p className="text-gray-300 italic">
+                              "{sentence.meaning}"
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant="outline"
+                                className="border-gray-400 text-gray-300"
+                              >
+                                {sentence.word_meaning_in_context}
+                              </Badge>
+                              {sentence.word_pos_in_context && (
+                                <Badge
+                                  variant="outline"
+                                  className="border-gray-500 text-gray-300 text-xs"
+                                >
+                                  {sentence.word_pos_in_context}
+                                </Badge>
+                              )}
+                              <Badge
+                                variant="secondary"
+                                className="bg-gray-500 text-gray-200"
+                              >
+                                {sentence.wordbook_info?.name}
+                              </Badge>
+                            </div>
+                            {sentence.word_memo_in_context && (
+                              <div className="space-y-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (sentence.id)
+                                      toggleMemoExpanded(sentence.id);
+                                  }}
+                                  className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-300 transition-colors"
+                                >
+                                  {sentence.id &&
+                                  expandedMemos.has(sentence.id) ? (
+                                    <>
+                                      <ChevronUp className="w-4 h-4" />
+                                      메모 숨기기
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ChevronDown className="w-4 h-4" />
+                                      메모 보기
+                                    </>
+                                  )}
+                                </button>
+                                {sentence.id &&
+                                  expandedMemos.has(sentence.id) && (
+                                    <p className="text-gray-400 pl-5 text-sm whitespace-pre-line">
+                                      {sentence.word_memo_in_context}
+                                    </p>
+                                  )}
+                              </div>
+                            )}
+                            {sentence.last_reviewed_at && (
+                              <div className="flex items-center gap-4 text-sm text-gray-400 pt-2 border-t border-gray-500">
+                                <div className="flex items-center gap-1">
+                                  <Clock className="w-4 h-4" />
+                                  마지막 복습:{" "}
+                                  {new Date(
+                                    sentence.last_reviewed_at
+                                  ).toLocaleDateString("ko-KR")}
+                                </div>
+                                <div>복습 횟수: {sentence.review_count}회</div>
+                                <div className="flex items-center gap-1">
+                                  {sentence.is_last_review_successful ? (
+                                    <>
+                                      <CheckCircle className="w-4 h-4 text-green-400" />
+                                      <span className="text-green-400">
+                                        성공
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <XCircle className="w-4 h-4 text-red-400" />
+                                      <span className="text-red-400">실패</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

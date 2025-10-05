@@ -563,6 +563,11 @@ export default function AnalyzePage() {
 
     await wordbookService.saveWordbook(saveData);
 
+    // 단어장 저장 완료 후 sessionStorage에서 분석 데이터 삭제
+    if (analysisId && typeof window !== "undefined") {
+      window.sessionStorage?.removeItem(`analysis_${analysisId}`);
+    }
+
     alert(`${selectedWords.length}개의 단어가 단어장에 저장되었습니다!`);
 
     // 홈페이지로 이동하면서 새로고침

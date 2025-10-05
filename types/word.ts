@@ -1,9 +1,9 @@
 // Word and Sentence types
 export const languages = [
   { value: "all", label: "전체 언어" },
-  { value: "english", label: "영어" },
-  { value: "chinese", label: "중국어" },
-  { value: "spanish", label: "스페인어" },
+  { value: "english", label: "🇬🇧 영어" },
+  { value: "chinese", label: "🇨🇳 중국어" },
+  { value: "spanish", label: "🇪🇸 스페인어" },
 ];
 
 export interface Word {
@@ -53,6 +53,8 @@ export interface WordWithSentences {
 
 export interface SentenceWithWordbook extends Sentence {
   word_meaning_in_context: string;
+  word_pos_in_context: string;
+  word_memo_in_context: string;
   is_current_wordbook: boolean;
   wordbook_info: WordbookInfo;
 }
@@ -104,8 +106,22 @@ export interface ReviewWord {
   context: string;
 }
 
+// Category review types (different structure)
+export interface CategoryReviewMeaning {
+  id: string;
+  meaning: string;
+  others: string;
+  pos: string;
+  context: string;
+}
+
+export interface CategoryReviewWord {
+  word: string;
+  meanings: CategoryReviewMeaning[];
+}
+
 export interface ReviewData {
-  words: ReviewWord[];
+  words: (ReviewWord | CategoryReviewWord)[];
   total_count: number;
 }
 

@@ -45,20 +45,22 @@ class WordbookService {
 
   // Review related methods
   async getReviewData(id: number): Promise<ReviewData> {
-    return apiClient.get<ReviewData>(`/wordbooks/${id}/review/`, {
+    return apiClient.get<ReviewData>(`/wordbooks/review/${id}/`, {
       requireAuth: true,
     });
   }
 
   async getAllReviewData(
     language: string,
-    category: number
+    category: number,
+    wordCount: number
   ): Promise<ReviewData> {
     return apiClient.get<ReviewData>(`/wordbooks/review/`, {
       requireAuth: true,
       queryParams: {
         language: language,
         category: category.toString(),
+        limit: wordCount.toString(),
       },
     });
   }
