@@ -424,23 +424,14 @@ export default function NotesPage() {
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="space-y-1">
-                          <CardTitle className="text-lg text-white">
-                            {note.name}
-                          </CardTitle>
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant="secondary"
-                              className="bg-gray-800 text-gray-300 border-gray-600"
-                            >
+                          <CardTitle className="text-white flex flex-row justify-between">
+                            <div className="text-xl flex items-end gap-2">
+                              {note.name}
+                            </div>
+                            <div className="flex ml-3 items-end gap-2 text-sm text-gray-500">
                               {note.category}
-                            </Badge>
-                            <Badge
-                              variant="outline"
-                              className="border-gray-500 text-gray-300"
-                            >
-                              {getLanguageLabel(note.language)}
-                            </Badge>
-                          </div>
+                            </div>
+                          </CardTitle>
                         </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -486,10 +477,9 @@ export default function NotesPage() {
                         </DropdownMenu>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 flex flex-row justify-between">
                       {/* Date */}
-                      <div className="flex items-center gap-2 text-xs text-gray-400">
-                        <Calendar className="w-3 h-3" />
+                      <div className="flex items-center justify-end gap-2 text-xs text-gray-400">
                         {new Date(note.createdAt).toLocaleDateString("ko-KR")}
                       </div>
                     </CardContent>
