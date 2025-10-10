@@ -1,3 +1,10 @@
+// Import extraction functions first
+import {
+  extractTextFromImage,
+  splitSentences,
+  analyzeSentences,
+} from "./extraction.service";
+
 // Export all services
 export { authService } from "./auth.service";
 export { wordbookService } from "./wordbook.service";
@@ -8,6 +15,13 @@ export {
 } from "./extraction.service";
 export { categoryService } from "./category.service";
 export { wordService } from "./word.service";
+
+// Create extractionService object for convenience
+export const extractionService = {
+  extractTextFromImage,
+  splitSentences,
+  analyzeSentences,
+};
 
 // Export API client and error class
 export { apiClient, APIError } from "./api-client";
