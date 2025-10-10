@@ -538,20 +538,6 @@ export default function NotesPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4" />
-                          <span>{timelineItem.totalWords}개 단어</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <BookOpen className="w-4 h-4" />
-                          <span>{timelineItem.totalSentences}개 문장</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <CheckCircle className="w-4 h-4" />
-                          <span>{timelineItem.totalReviewed}개 복습완료</span>
-                        </div>
-                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -588,17 +574,6 @@ export default function NotesPage() {
                                   <div className="flex items-center gap-1">
                                     <BookOpen className="w-3 h-3" />
                                     <span>{note.sentences}개 문장</span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
-                                    <span>
-                                      복습률:{" "}
-                                      {getProgressPercentage(
-                                        note.reviewedWords,
-                                        note.wordCount
-                                      )}
-                                      %
-                                    </span>
                                   </div>
                                 </div>
                               </div>
