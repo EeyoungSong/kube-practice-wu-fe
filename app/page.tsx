@@ -59,6 +59,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+const GraphView = dynamic(() => import("@/components/GraphView"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex min-h-[60vh] items-center justify-center text-indigo-200">
+      별자리를 그리는 중...
+    </div>
+  ),
+});
+
 interface Note {
   id: string;
   name: string;
@@ -73,7 +82,9 @@ interface Note {
 export default function NotesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("전체 카테고리");
-  const [viewMode, setViewMode] = useState("grid"); // "grid" or "timeline"
+  const [viewMode, setViewMode] = useState<
+    "grid" | "timeline" | "constellation"
+  >("grid");
   const queryClient = useQueryClient();
 
   // 전역 언어 상태 관리
@@ -165,6 +176,11 @@ export default function NotesPage() {
       setIsSavingEdit(false);
     }
   };
+
+  useEffect(() => {
+    console.log({ selectedLanguage });
+    setSelectedCategory("전체 카테고리");
+  }, [selectedLanguage]);
 
   useEffect(() => {
     console.log(wordbooksData);
@@ -325,6 +341,18 @@ export default function NotesPage() {
                     } rounded-none border-none w-10 h-10 flex items-center justify-center p-0`}
                   >
                     <History className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === "constellation" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("constellation")}
+                    className={`${
+                      viewMode === "constellation"
+                        ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                        : "text-gray-300 hover:bg-gray-800"
+                    } rounded-none border-none w-10 h-10 flex items-center justify-center p-0`}
+                  >
+                    <Star className="w-4 h-4" />
                   </Button>
                 </div>
 
@@ -599,6 +627,12 @@ export default function NotesPage() {
                   </Link>
                 </div>
               )}
+            </div>
+          )}
+
+          {viewMode === "constellation" && (
+            <div className="rounded-2xl border border-gray-700/40 bg-transparent p-2 shadow-lg">
+              <GraphView />
             </div>
           )}
 

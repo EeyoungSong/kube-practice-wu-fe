@@ -62,7 +62,7 @@ export default function Header({
               />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-200 rounded-full animate-pulse" />
             </div>
-            <div>
+            <div className="hidden sm:block">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
                 단어의 우주
               </h1>
@@ -99,8 +99,8 @@ export default function Header({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button className="bg-transparent text-white hover:bg-gray-700 hover:border-none border-none focus:border-none">
-                      <User className="w-4 h-4 mr-2" />
-                      {user.username}
+                      <User className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">{user.username}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="bg-gray-800 border-gray-600">
