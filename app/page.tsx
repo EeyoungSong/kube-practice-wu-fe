@@ -285,6 +285,7 @@ export default function NotesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+      {/* // <div className="min-h-screen bg-yellow-100"> */}
       {/* Header */}
       <Header
         selectedLanguage={selectedLanguage}

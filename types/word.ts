@@ -136,9 +136,6 @@ export interface ReviewSubmission {
 }
 
 export interface ReviewResponse {
-  success: boolean;
-  message: string;
-  total_score: number;
-  known_count: number;
-  total_count: number;
+  word_id: string;
+  is_known: boolean;
 }
