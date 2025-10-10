@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { languages } from "@/types/word";
 import { categoryService } from "@/services";
+import Image from "next/image";
 
 interface Language {
   value: string;
@@ -52,10 +53,16 @@ export default function Header({
             onClick={() => router.push("/")}
           >
             <div className="relative">
-              <Star className="w-8 h-8 text-indigo-400" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-400 rounded-full animate-pulse" />
+              <Image
+                src="/star-icon.png"
+                alt="Star Icon"
+                width={32}
+                height={32}
+                className="text-indigo-400"
+              />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-200 rounded-full animate-pulse" />
             </div>
-            <div>
+            <div className="hidden sm:block">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
                 단어의 우주
               </h1>
@@ -69,15 +76,15 @@ export default function Header({
                 value={selectedLanguage}
                 onValueChange={handleLanguageChange}
               >
-                <SelectTrigger className="w-32 bg-gray-800 border-gray-600 text-white">
+                <SelectTrigger className="w-32 bg-gray-800 border-gray-800 text-white hover:bg-gray-700 focus:border-none">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-600">
+                <SelectContent className="bg-gray-800 border-gray-800">
                   {languages.map((lang) => (
                     <SelectItem
                       key={lang.value}
                       value={lang.value}
-                      className="text-white hover:bg-gray-700"
+                      className="text-white"
                     >
                       {lang.label}
                     </SelectItem>
@@ -91,9 +98,9 @@ export default function Header({
               <>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button className="bg-transparent text-white hover:bg-gray-700 hover:border-none border-none">
-                      <User className="w-4 h-4 mr-2" />
-                      {user.username}
+                    <Button className="bg-transparent text-white hover:bg-gray-700 hover:border-none border-none focus:border-none">
+                      <User className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">{user.username}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="bg-gray-800 border-gray-600">

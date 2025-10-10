@@ -17,6 +17,7 @@ export interface AnalyzedWord {
   original_text: string;
   meaning: string;
   others: string;
+  pos: string;
 }
 
 export interface AnalyzedSentence {

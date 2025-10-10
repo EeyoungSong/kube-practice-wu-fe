@@ -628,7 +628,7 @@ export default function ImageOCRSelector({
             disabled={getSelectedWordsCount() === 0}
             className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
           >
-            노트에 저장하기 ({getSelectedWordsCount()}개 단어)
+            단어장에 저장하기 ({getSelectedWordsCount()}개 단어)
           </Button>
           <Button
             onClick={onCancel}

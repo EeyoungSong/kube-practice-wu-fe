@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +38,9 @@ import {
 import Link from "next/link";
 import { languages } from "@/types/word";
 import Header from "@/components/Header";
+import ReviewFloatingButton from "@/components/ReviewFloatingButton";
 import dynamic from "next/dynamic";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useCategories } from "@/hooks/use-categories";
 import { useWordbooks } from "@/hooks/use-wordbooks";
@@ -46,6 +48,25 @@ import { useLanguage } from "@/hooks/use-language";
 import type { Wordbook, WordbookResponse } from "@/hooks/use-wordbooks";
 import type { Category } from "@/types/category";
 import { wordbookService } from "@/services";
+import { APIError } from "@/services/api-client";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+const GraphView = dynamic(() => import("@/components/GraphView"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex min-h-[60vh] items-center justify-center text-indigo-200">
+      별자리를 그리는 중...
+    </div>
+  ),
+});
 
 interface Note {
   id: string;
@@ -61,7 +82,10 @@ interface Note {
 export default function NotesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("전체 카테고리");
-  const [viewMode, setViewMode] = useState("grid"); // "grid" or "timeline"
+  const [viewMode, setViewMode] = useState<
+    "grid" | "timeline" | "constellation"
+  >("grid");
+  const queryClient = useQueryClient();
 
   // 전역 언어 상태 관리
   const { selectedLanguage, setSelectedLanguage, isLoaded } = useLanguage();
@@ -79,6 +103,84 @@ export default function NotesPage() {
     isLoading: wordbooksLoading,
     error: wordbooksError,
   } = useWordbooks();
+
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [editForm, setEditForm] = useState<{ name: string; category: string }>({
+    name: "",
+    category: "",
+  });
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const openEditDialog = (note: Note) => {
+    setEditingNote(note);
+    setEditForm({
+      name: note.name,
+      category: note.category,
+    });
+    setEditError(null);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      setEditingNote(null);
+      setEditForm({ name: "", category: "" });
+      setEditError(null);
+      setIsSavingEdit(false);
+    }
+    setIsEditDialogOpen(open);
+  };
+
+  const handleEditSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingNote) return;
+
+    const trimmedName = editForm.name.trim();
+    const trimmedCategory = editForm.category.trim();
+
+    if (!trimmedName) {
+      setEditError("단어장 이름을 입력해주세요.");
+      return;
+    }
+
+    if (!trimmedCategory) {
+      setEditError("카테고리를 선택해주세요.");
+      return;
+    }
+
+    try {
+      setIsSavingEdit(true);
+      setEditError(null);
+      await wordbookService.updateWordbook(Number(editingNote.id), {
+        name: trimmedName,
+        category: trimmedCategory,
+      });
+      await queryClient.invalidateQueries({ queryKey: ["wordbooks"] });
+      setIsEditDialogOpen(false);
+      setEditingNote(null);
+      setEditForm({ name: "", category: "" });
+    } catch (error) {
+      console.error("Failed to update wordbook:", error);
+      if (error instanceof APIError && error.detail) {
+        setEditError(error.detail);
+      } else {
+        const fallbackMessage =
+          error instanceof Error
+            ? error.message
+            : "단어장 업데이트에 실패했습니다. 다시 시도해주세요.";
+        setEditError(fallbackMessage);
+      }
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  useEffect(() => {
+    console.log({ selectedLanguage });
+    setSelectedCategory("전체 카테고리");
+  }, [selectedLanguage]);
 
   useEffect(() => {
     console.log(wordbooksData);
@@ -199,6 +301,7 @@ export default function NotesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+      {/* // <div className="min-h-screen bg-yellow-100"> */}
       {/* Header */}
       <Header
         selectedLanguage={selectedLanguage}
@@ -211,7 +314,7 @@ export default function NotesPage() {
           {/* Filters */}
           <div className="mb-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-start">
-              {/* 상단: 보기 모드 전환과 새 노트 만들기 버튼 */}
+              {/* 상단: 보기 모드 전환과 새 단어장 만들기 버튼 */}
               <div className="flex flex-row justify-between items-center">
                 {/* 보기 모드 전환 */}
                 <div className="flex border border-gray-600 rounded-lg overflow-hidden">
@@ -239,14 +342,26 @@ export default function NotesPage() {
                   >
                     <History className="w-4 h-4" />
                   </Button>
+                  <Button
+                    variant={viewMode === "constellation" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("constellation")}
+                    className={`${
+                      viewMode === "constellation"
+                        ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                        : "text-gray-300 hover:bg-gray-800"
+                    } rounded-none border-none w-10 h-10 flex items-center justify-center p-0`}
+                  >
+                    <Star className="w-4 h-4" />
+                  </Button>
                 </div>
 
-                {/* 새 노트 만들기 버튼 */}
+                {/* 새 단어장 만들기 버튼 */}
                 <Link href="/add">
                   <Button className="bg-indigo-600 hover:bg-indigo-700 text-white m-4">
                     <Plus className="w-4 h-4 m-2" />
-                    <span className="hidden sm:inline">새 노트 만들기</span>
-                    <span className="sm:hidden">새 노트</span>
+                    <span className="hidden sm:inline">새 단어장 만들기</span>
+                    <span className="sm:hidden">새 단어장</span>
                   </Button>
                 </Link>
               </div>
@@ -298,7 +413,7 @@ export default function NotesPage() {
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
-                        placeholder="노트 이름으로 검색..."
+                        placeholder="단어장 이름으로 검색..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10 bg-gray-800 border-none text-white placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -333,28 +448,19 @@ export default function NotesPage() {
                 <Link href={`/notes/${note.id}`} key={note.id}>
                   <Card
                     key={note.id}
-                    className="border-2 border-gray-700 bg-transparent hover:border-indigo-500 transition-all hover:shadow-lg"
+                    className="bg-gray-700/30 border-gray-700/30 hover:border-indigo-700 hover:shadow-lg"
                   >
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="space-y-1">
-                          <CardTitle className="text-lg text-white">
-                            {note.name}
-                          </CardTitle>
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant="secondary"
-                              className="bg-gray-800 text-gray-300 border-gray-600"
-                            >
+                          <CardTitle className="text-white flex flex-row justify-between">
+                            <div className="text-xl flex items-end gap-2">
+                              {note.name}
+                            </div>
+                            <div className="flex ml-3 items-end gap-2 text-sm text-gray-500">
                               {note.category}
-                            </Badge>
-                            <Badge
-                              variant="outline"
-                              className="border-gray-500 text-gray-300"
-                            >
-                              {getLanguageLabel(note.language)}
-                            </Badge>
-                          </div>
+                            </div>
+                          </CardTitle>
                         </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -379,11 +485,11 @@ export default function NotesPage() {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log("편집:", note.id);
+                                openEditDialog(note);
                               }}
                             >
                               <Edit className="w-4 h-4 mr-2" />
-                              노트 편집
+                              단어장 편집
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-red-400 hover:bg-gray-700 hover:text-red-300 cursor-pointer"
@@ -394,16 +500,15 @@ export default function NotesPage() {
                               }}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
-                              노트 삭제
+                              단어장 삭제
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 flex flex-row justify-between">
                       {/* Date */}
-                      <div className="flex items-center gap-2 text-xs text-gray-400">
-                        <Calendar className="w-3 h-3" />
+                      <div className="flex items-center justify-end gap-2 text-xs text-gray-400">
                         {new Date(note.createdAt).toLocaleDateString("ko-KR")}
                       </div>
                     </CardContent>
@@ -431,20 +536,6 @@ export default function NotesPage() {
                           <p className="text-sm text-gray-400">
                             {timelineItem.createdWordbooks.length}개 단어장 생성
                           </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4" />
-                          <span>{timelineItem.totalWords}개 단어</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <BookOpen className="w-4 h-4" />
-                          <span>{timelineItem.totalSentences}개 문장</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <CheckCircle className="w-4 h-4" />
-                          <span>{timelineItem.totalReviewed}개 복습완료</span>
                         </div>
                       </div>
                     </div>
@@ -484,17 +575,6 @@ export default function NotesPage() {
                                     <BookOpen className="w-3 h-3" />
                                     <span>{note.sentences}개 문장</span>
                                   </div>
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
-                                    <span>
-                                      복습률:{" "}
-                                      {getProgressPercentage(
-                                        note.reviewedWords,
-                                        note.wordCount
-                                      )}
-                                      %
-                                    </span>
-                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -517,7 +597,7 @@ export default function NotesPage() {
                   </p>
                   <Link href="/add">
                     <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
-                      <Plus className="w-4 h-4 mr-2" />첫 번째 노트 만들기
+                      <Plus className="w-4 h-4 mr-2" />첫 번째 단어장 만들기
                     </Button>
                   </Link>
                 </div>
@@ -525,27 +605,151 @@ export default function NotesPage() {
             </div>
           )}
 
-          {/* 목록보기에서 노트가 없을 때 */}
+          {viewMode === "constellation" && (
+            <div className="rounded-2xl border border-gray-700/40 bg-transparent p-2 shadow-lg">
+              <GraphView />
+            </div>
+          )}
+
+          {/* 목록보기에서 단어장가 없을 때 */}
           {viewMode === "grid" &&
             filteredNotes.length === 0 &&
             !wordbooksLoading && (
               <div className="text-center py-12">
                 <BookOpen className="w-12 h-12 text-gray-500 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-white mb-2">
-                  노트가 없습니다
+                  단어장가 없습니다
                 </h3>
                 <p className="text-gray-400 mb-4">
-                  새로운 노트를 만들어 단어 학습을 시작해보세요!
+                  새로운 단어장를 만들어 단어 학습을 시작해보세요!
                 </p>
                 <Link href="/add">
                   <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
-                    <Plus className="w-4 h-4 mr-2" />첫 번째 노트 만들기
+                    <Plus className="w-4 h-4 mr-2" />첫 번째 단어장 만들기
                   </Button>
                 </Link>
               </div>
             )}
         </div>
       </main>
+      <Dialog open={isEditDialogOpen} onOpenChange={handleDialogOpenChange}>
+        <DialogContent className="bg-gray-900 border-gray-700 text-white">
+          <DialogHeader>
+            <DialogTitle>단어장 편집</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              단어장 이름과 카테고리를 업데이트할 수 있습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label
+                htmlFor="edit-note-name"
+                className="text-gray-200 font-medium"
+              >
+                단어장 이름
+              </Label>
+              <Input
+                id="edit-note-name"
+                value={editForm.name}
+                onChange={(event) => {
+                  setEditForm((prev) => ({
+                    ...prev,
+                    name: event.target.value,
+                  }));
+                  if (editError) {
+                    setEditError(null);
+                  }
+                }}
+                className="bg-gray-800 border border-gray-700 text-white focus-visible:ring-0 focus-visible:ring-offset-0"
+                placeholder="단어장 이름을 입력하세요"
+                disabled={isSavingEdit}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label
+                htmlFor="edit-note-category"
+                className="text-gray-200 font-medium"
+              >
+                카테고리
+              </Label>
+              <Select
+                value={editForm.category || undefined}
+                onValueChange={(value) => {
+                  setEditForm((prev) => ({ ...prev, category: value }));
+                  if (editError) {
+                    setEditError(null);
+                  }
+                }}
+                disabled={categoriesLoading || isSavingEdit}
+              >
+                <SelectTrigger
+                  id="edit-note-category"
+                  className="bg-gray-800 border border-gray-700 text-white focus:ring-0 focus:ring-offset-0"
+                >
+                  <SelectValue
+                    placeholder={
+                      categoriesLoading
+                        ? "카테고리 로딩 중..."
+                        : "카테고리를 선택하세요"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border border-gray-700 text-white">
+                  {categoriesData?.map((category: Category) => (
+                    <SelectItem
+                      key={category.id}
+                      value={category.name}
+                      className="text-white hover:bg-gray-700"
+                    >
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                  {!categoriesLoading &&
+                    editForm.category &&
+                    !categoriesData?.some(
+                      (category: Category) =>
+                        category.name === editForm.category
+                    ) && (
+                      <SelectItem
+                        key={`custom-${editForm.category}`}
+                        value={editForm.category}
+                        className="text-white hover:bg-gray-700"
+                      >
+                        {editForm.category}
+                      </SelectItem>
+                    )}
+                </SelectContent>
+              </Select>
+            </div>
+            {editError && (
+              <p className="text-sm text-red-400" role="alert">
+                {editError}
+              </p>
+            )}
+            <DialogFooter className="gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="border-gray-600 text-gray-200 hover:bg-gray-800"
+                onClick={() => handleDialogOpenChange(false)}
+                disabled={isSavingEdit}
+              >
+                취소
+              </Button>
+              <Button
+                type="submit"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                disabled={isSavingEdit}
+              >
+                {isSavingEdit ? "저장 중..." : "변경 사항 저장"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Review Floating Button */}
+      <ReviewFloatingButton />
     </div>
   );
 }

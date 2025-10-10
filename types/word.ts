@@ -1,9 +1,9 @@
 // Word and Sentence types
 export const languages = [
   { value: "all", label: "전체 언어" },
-  { value: "english", label: "영어" },
-  { value: "chinese", label: "중국어" },
-  { value: "spanish", label: "스페인어" },
+  { value: "english", label: "🇬🇧 영어" },
+  { value: "chinese", label: "🇨🇳 중국어" },
+  { value: "spanish", label: "🇪🇸 스페인어" },
 ];
 
 export interface Word {
@@ -11,6 +11,7 @@ export interface Word {
   text: string;
   original_text?: string;
   meaning: string;
+  pos: string;
   others?: string;
 }
 
@@ -52,6 +53,8 @@ export interface WordWithSentences {
 
 export interface SentenceWithWordbook extends Sentence {
   word_meaning_in_context: string;
+  word_pos_in_context: string;
+  word_memo_in_context: string;
   is_current_wordbook: boolean;
   wordbook_info: WordbookInfo;
 }
@@ -66,11 +69,11 @@ export interface WordbookResponse {
 }
 
 export interface SaveWordbookRequest {
-  wordbook_name: string;
-  wordbook_category: string;
-  wordbook_language: string;
+  name: string;
+  category: string;
+  language: string;
   input_type: "image" | "text";
-  selected: Array<{
+  sentences: Array<{
     text: string;
     meaning: string;
     words: Array<{
@@ -79,6 +82,11 @@ export interface SaveWordbookRequest {
       others: string;
     }>;
   }>;
+}
+
+export interface UpdateWordbookRequest {
+  name: string;
+  category: string;
 }
 
 // Word History types
@@ -98,8 +106,22 @@ export interface ReviewWord {
   context: string;
 }
 
+// Category review types (different structure)
+export interface CategoryReviewMeaning {
+  id: string;
+  meaning: string;
+  others: string;
+  pos: string;
+  context: string;
+}
+
+export interface CategoryReviewWord {
+  word: string;
+  meanings: CategoryReviewMeaning[];
+}
+
 export interface ReviewData {
-  words: ReviewWord[];
+  words: (ReviewWord | CategoryReviewWord)[];
   total_count: number;
 }
 
@@ -114,9 +136,6 @@ export interface ReviewSubmission {
 }
 
 export interface ReviewResponse {
-  success: boolean;
-  message: string;
-  total_score: number;
-  known_count: number;
-  total_count: number;
+  word_id: string;
+  is_known: boolean;
 }

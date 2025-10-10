@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   ArrowLeft,
   BookOpen,
@@ -13,6 +15,8 @@ import {
   Star,
   ChevronDown,
   ChevronUp,
+  Pencil,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { analyzeSentences, wordService, wordbookService } from "@/services";
@@ -24,23 +28,24 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-interface Word {
+
+interface AnalysisWord {
   id: string;
   original: string;
   word: string;
   meaning: string;
   others: string;
-  partOfSpeech: string;
+  pos: string;
   isSelected: boolean;
   isKnown?: boolean;
   previousContexts?: string[];
 }
 
-interface Sentence {
+interface AnalysisSentence {
   id: string;
   original: string;
   translation?: string;
-  words: Word[];
+  words: AnalysisWord[];
   isAnalyzed: boolean;
   isAnalyzing: boolean;
   isTranslationVisible?: boolean; // 번역 표시 상태 추가
@@ -49,7 +54,7 @@ interface Sentence {
 interface SelectedWordInfo {
   sentenceId: string;
   wordId: string;
-  word: Word;
+  word: AnalysisWord;
 }
 
 // 인터페이스 추가
@@ -92,9 +97,11 @@ export default function AnalyzePage() {
 
   // useMemo를 사용해서 분석 데이터를 메모이제이션
   const analysisData = useMemo(() => {
-    if (analysisId) {
-      // 새로운 방식: sessionStorage에서 읽기
-      const storedData = sessionStorage.getItem(`analysis_${analysisId}`);
+    if (analysisId && typeof window !== "undefined") {
+      // 새로운 방식: sessionStorage에서 읽기 (클라이언트 환경에서만 허용)
+      const storedData = window.sessionStorage?.getItem(
+        `analysis_${analysisId}`
+      );
       if (storedData) {
         const data = JSON.parse(storedData);
         return {
@@ -103,6 +110,7 @@ export default function AnalyzePage() {
           noteName: data.name,
           category: data.category,
           sentences: data.sentences,
+          analyzedSentences: data.analyzedSentences || [], // 분석된 문장들 추가
         };
       }
     }
@@ -118,6 +126,7 @@ export default function AnalyzePage() {
       noteName: searchParams.get("name") || "",
       category: searchParams.get("category") || "일반",
       sentences: searchParams.get("sentences")?.split(" | ") || [],
+      analyzedSentences: [], // 기본값
     };
   }, [analysisId, searchParams]);
 
@@ -127,50 +136,76 @@ export default function AnalyzePage() {
     noteName,
     category,
     sentences: inputSentences,
+    analyzedSentences,
   } = analysisData;
 
-  const [sentences, setSentences] = useState<Sentence[]>([]);
+  const [sentences, setSentences] = useState<AnalysisSentence[]>([]);
   const [selectedWordInfo, setSelectedWordInfo] =
     useState<SelectedWordInfo | null>(null);
   const [wordContext, setWordContext] = useState<WordContext | null>(null);
   const [isLoadingContext, setIsLoadingContext] = useState(false);
+  const [isEditingWord, setIsEditingWord] = useState(false);
+  const [editingWordValues, setEditingWordValues] = useState({
+    meaning: "",
+    others: "",
+  });
 
   useEffect(() => {
     const fetchWordContext = async () => {
       if (selectedWordInfo) {
         setIsLoadingContext(true);
         try {
-          const context = await wordService.getWordHistory(
-            selectedWordInfo.word.id.toString()
+          const context = await wordService.getWordHistoryByWord(
+            selectedWordInfo.word.word
           );
           setWordContext(context as unknown as WordContext);
         } catch (error) {
           console.error("단어 과거 맥락 가져오기 실패:", error);
+          setWordContext(null);
         } finally {
           setIsLoadingContext(false);
         }
       }
     };
     fetchWordContext();
-  }, [selectedWordInfo?.word?.id]);
+  }, [selectedWordInfo?.word?.word]);
 
-  // 처음 로드 시 문장들을 초기화 (분석하지 않고 그냥 표시만)
+  // 처음 로드 시 문장들을 초기화 (저장된 분석 결과가 있으면 복원)
   useEffect(() => {
     if (inputSentences && inputSentences.length > 0) {
-      const initialSentences: Sentence[] = inputSentences.map(
-        (sentence: string, index: number) => ({
-          id: `sentence_${index}`,
-          original: sentence,
-          translation: undefined,
-          words: [],
-          isAnalyzed: false,
-          isAnalyzing: false,
-          isTranslationVisible: false, // 기본적으로 숨김
-        })
+      const initialSentences: AnalysisSentence[] = inputSentences.map(
+        (sentence: string, index: number) => {
+          const sentenceId = `sentence_${index}`;
+
+          // 저장된 분석 결과에서 해당 문장 찾기
+          const savedSentence = analyzedSentences.find(
+            (s: AnalysisSentence) =>
+              s.id === sentenceId && s.original === sentence
+          );
+
+          if (savedSentence) {
+            // 저장된 분석 결과가 있으면 복원
+            return {
+              ...savedSentence,
+              isAnalyzing: false, // 로딩 상태는 항상 false로 초기화
+            };
+          } else {
+            // 저장된 결과가 없으면 기본 상태로 초기화
+            return {
+              id: sentenceId,
+              original: sentence,
+              translation: undefined,
+              words: [],
+              isAnalyzed: false,
+              isAnalyzing: false,
+              isTranslationVisible: false, // 기본적으로 숨김
+            };
+          }
+        }
       );
       setSentences(initialSentences);
     }
-  }, [inputSentences]);
+  }, [inputSentences, analyzedSentences]);
 
   useEffect(() => {
     console.log(sentences);
@@ -188,9 +223,53 @@ export default function AnalyzePage() {
       );
       if (word) {
         setSelectedWordInfo((prev) => (prev ? { ...prev, word } : null));
+        if (!isEditingWord) {
+          setEditingWordValues({
+            meaning: word.meaning,
+            others: word.others,
+          });
+        }
       }
     }
-  }, [sentences, selectedWordInfo?.sentenceId, selectedWordInfo?.wordId]);
+  }, [
+    sentences,
+    selectedWordInfo?.sentenceId,
+    selectedWordInfo?.wordId,
+    isEditingWord,
+  ]);
+
+  useEffect(() => {
+    if (selectedWordInfo) {
+      // 편집 중이 아닐 때만 값을 업데이트
+      if (!isEditingWord) {
+        setEditingWordValues({
+          meaning: selectedWordInfo.word.meaning,
+          others: selectedWordInfo.word.others,
+        });
+      }
+    } else {
+      setIsEditingWord(false);
+      setEditingWordValues({ meaning: "", others: "" });
+    }
+  }, [selectedWordInfo, isEditingWord]);
+
+  // sessionStorage에 분석 결과 저장하는 함수
+  const saveAnalysisToSession = (updatedSentences: AnalysisSentence[]) => {
+    if (analysisId && typeof window !== "undefined") {
+      const currentData = window.sessionStorage?.getItem(
+        `analysis_${analysisId}`
+      );
+      if (currentData) {
+        const data = JSON.parse(currentData);
+        // 분석된 문장들을 저장
+        data.analyzedSentences = updatedSentences.filter((s) => s.isAnalyzed);
+        window.sessionStorage?.setItem(
+          `analysis_${analysisId}`,
+          JSON.stringify(data)
+        );
+      }
+    }
+  };
 
   // 개별 문장 분석 함수
   const analyzeSingleSentence = async (sentenceId: string) => {
@@ -220,36 +299,21 @@ export default function AnalyzePage() {
       if (response.selected && response.selected.length > 0) {
         const analyzedData = response.selected[0];
 
-        // 간단한 품사 추론 함수
-        const getPartOfSpeech = (wordText: string): string => {
-          const text = wordText.toLowerCase();
-          if (["the", "a", "an"].includes(text)) return "관사";
-          if (["and", "or", "but"].includes(text)) return "접속사";
-          if (["on", "in", "at", "to", "for", "with"].includes(text))
-            return "전치사";
-          if (["i", "you", "he", "she", "it", "we", "they"].includes(text))
-            return "대명사";
-          if (text.endsWith("ly")) return "부사";
-          if (text.endsWith("ing")) return "동명사/현재분사";
-          if (text.endsWith("ed")) return "과거분사";
-          return "기타";
-        };
-
-        const analyzedWords: Word[] = analyzedData.words.map(
+        const analyzedWords: AnalysisWord[] = analyzedData.words.map(
           (word, wordIndex) => ({
             id: `word_${sentenceId}_${wordIndex}`,
             original: word.original_text,
             word: word.text,
             meaning: word.meaning,
             others: word.others,
-            partOfSpeech: getPartOfSpeech(word.text),
+            pos: word.pos,
             isSelected: false,
           })
         );
 
         // 분석 결과로 문장 업데이트
-        setSentences((prev) =>
-          prev.map((sentence) =>
+        setSentences((prev) => {
+          const updatedSentences = prev.map((sentence) =>
             sentence.id === sentenceId
               ? {
                   ...sentence,
@@ -260,8 +324,13 @@ export default function AnalyzePage() {
                   isTranslationVisible: false, // 기본적으로 숨김
                 }
               : sentence
-          )
-        );
+          );
+
+          // sessionStorage에 저장
+          saveAnalysisToSession(updatedSentences);
+
+          return updatedSentences;
+        });
       }
     } catch (error) {
       console.error("문장 분석 중 오류:", error);
@@ -282,22 +351,27 @@ export default function AnalyzePage() {
 
   // 토글 함수 추가 (analyzeSingleSentence 함수 근처에)
   const toggleTranslation = (sentenceId: string) => {
-    setSentences((prev) =>
-      prev.map((sentence) =>
+    setSentences((prev) => {
+      const updatedSentences = prev.map((sentence) =>
         sentence.id === sentenceId
           ? {
               ...sentence,
               isTranslationVisible: !sentence.isTranslationVisible,
             }
           : sentence
-      )
-    );
+      );
+
+      // sessionStorage에 저장
+      saveAnalysisToSession(updatedSentences);
+
+      return updatedSentences;
+    });
   };
 
   const toggleWordSelection = (sentenceId: string, wordId: string) => {
     console.log("toggleWordSelection", sentenceId, wordId);
-    setSentences((prev) =>
-      prev.map((sentence) =>
+    setSentences((prev) => {
+      const updatedSentences = prev.map((sentence) =>
         sentence.id === sentenceId
           ? {
               ...sentence,
@@ -308,8 +382,74 @@ export default function AnalyzePage() {
               ),
             }
           : sentence
-      )
-    );
+      );
+
+      // sessionStorage에 저장
+      saveAnalysisToSession(updatedSentences);
+
+      return updatedSentences;
+    });
+  };
+
+  const startWordEditing = () => {
+    if (!selectedWordInfo) return;
+    setEditingWordValues({
+      meaning: selectedWordInfo.word.meaning,
+      others: selectedWordInfo.word.others,
+    });
+    setIsEditingWord(true);
+  };
+
+  const handleWordFieldChange = (
+    field: "meaning" | "others",
+    value: string
+  ) => {
+    console.log("handleWordFieldChange", field, value);
+    setEditingWordValues((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const cancelWordEditing = () => {
+    if (!selectedWordInfo) {
+      setIsEditingWord(false);
+      return;
+    }
+    setEditingWordValues({
+      meaning: selectedWordInfo.word.meaning,
+      others: selectedWordInfo.word.others,
+    });
+    setIsEditingWord(false);
+  };
+
+  const saveEditedWord = () => {
+    if (!selectedWordInfo) return;
+
+    console.log("saveEditedWord", editingWordValues);
+
+    setSentences((prev) => {
+      const updatedSentences = prev.map((sentence) =>
+        sentence.id === selectedWordInfo.sentenceId
+          ? {
+              ...sentence,
+              words: sentence.words.map((word) =>
+                word.id === selectedWordInfo.wordId
+                  ? {
+                      ...word,
+                      meaning: editingWordValues.meaning,
+                      others: editingWordValues.others,
+                    }
+                  : word
+              ),
+            }
+          : sentence
+      );
+
+      // sessionStorage에 저장
+      saveAnalysisToSession(updatedSentences);
+
+      return updatedSentences;
+    });
+
+    setIsEditingWord(false);
   };
 
   const handleWordClick = (sentenceId: string, wordId: string) => {
@@ -333,7 +473,7 @@ export default function AnalyzePage() {
   };
 
   // 문장을 단어별로 분할하고 클릭 가능하게 만드는 함수
-  const renderClickableWords = (sentence: Sentence) => {
+  const renderClickableWords = (sentence: AnalysisSentence) => {
     if (!sentence.isAnalyzed) {
       return <span className="break-words">{sentence.original}</span>;
     }
@@ -404,11 +544,11 @@ export default function AnalyzePage() {
     }
 
     const saveData: SaveWordbookRequest = {
-      wordbook_name: noteName,
-      wordbook_category: category,
-      wordbook_language: language,
+      name: noteName,
+      category: category,
+      language: language,
       input_type: inputType,
-      selected: sentencesWithSelectedWords.map((sentence) => ({
+      sentences: sentencesWithSelectedWords.map((sentence) => ({
         text: sentence.original,
         meaning: sentence.translation || "",
         words: sentence.words
@@ -422,6 +562,11 @@ export default function AnalyzePage() {
     };
 
     await wordbookService.saveWordbook(saveData);
+
+    // 단어장 저장 완료 후 sessionStorage에서 분석 데이터 삭제
+    if (analysisId && typeof window !== "undefined") {
+      window.sessionStorage?.removeItem(`analysis_${analysisId}`);
+    }
 
     alert(`${selectedWords.length}개의 단어가 단어장에 저장되었습니다!`);
 
@@ -549,24 +694,103 @@ export default function AnalyzePage() {
                           </CardHeader>
                           <CardContent>
                             <div className="space-y-4">
-                              <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className="text-xl font-bold text-white">
-                                    {selectedWordInfo.word.word}
-                                  </span>
-                                  <Badge
-                                    variant="outline"
-                                    className="text-xs border-gray-500 text-gray-300"
-                                  >
-                                    {selectedWordInfo.word.partOfSpeech}
-                                  </Badge>
+                              <div className="space-y-3">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <span className="text-xl font-bold text-white">
+                                        {selectedWordInfo.word.word}
+                                      </span>
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs border-gray-500 text-gray-300"
+                                      >
+                                        {selectedWordInfo.word.pos}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    {isEditingWord ? (
+                                      <>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-8 w-8 text-white hover:text-green-200"
+                                          onClick={saveEditedWord}
+                                        >
+                                          <Check className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-8 w-8 text-white hover:text-red-200"
+                                          onClick={cancelWordEditing}
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button>
+                                      </>
+                                    ) : (
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-white hover:text-indigo-200"
+                                        onClick={startWordEditing}
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                    )}
+                                  </div>
                                 </div>
-                                <p className="text-gray-300">
-                                  {selectedWordInfo.word.meaning}
-                                </p>
-                                <p className="text-xs text-gray-400">
-                                  {selectedWordInfo.word.others}
-                                </p>
+
+                                {isEditingWord ? (
+                                  <div className="space-y-3">
+                                    <div className="space-y-1">
+                                      <Input
+                                        value={editingWordValues.meaning}
+                                        onChange={(event) =>
+                                          handleWordFieldChange(
+                                            "meaning",
+                                            event.target.value
+                                          )
+                                        }
+                                        placeholder="뜻을 입력하세요"
+                                        className="bg-gray-800 border-gray-600 text-white"
+                                      />
+                                      <p className="text-xs text-gray-300">
+                                        뜻을 수정해서 저장할 수 있습니다.
+                                      </p>
+                                    </div>
+                                    <div className="space-y-1">
+                                      <Textarea
+                                        value={editingWordValues.others}
+                                        onChange={(event) =>
+                                          handleWordFieldChange(
+                                            "others",
+                                            event.target.value
+                                          )
+                                        }
+                                        placeholder="성조나 추가 정보를 입력하세요"
+                                        className="bg-gray-800 border-gray-600 text-white"
+                                        rows={3}
+                                      />
+                                      <p className="text-xs text-gray-300">
+                                        발음, 성조 등 추가 정보를 입력하세요.
+                                      </p>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <p className="text-gray-300">
+                                      {selectedWordInfo.word.meaning}
+                                    </p>
+                                    <p className="text-xs text-gray-200 whitespace-pre-line">
+                                      {selectedWordInfo.word.others || ""}
+                                    </p>
+                                  </>
+                                )}
                               </div>
 
                               <div className="pt-4 border-t border-gray-600">
@@ -679,7 +903,7 @@ export default function AnalyzePage() {
                     className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-8 text-white"
                   >
                     <Star className="w-4 h-4 mr-2" />
-                    노트에 저장하기 ({getSelectedWordsCount()}개 단어)
+                    단어장에 저장하기 ({getSelectedWordsCount()}개 단어)
                   </Button>
                 </div>
               </div>
@@ -697,21 +921,93 @@ export default function AnalyzePage() {
                     <CardContent>
                       {selectedWordInfo ? (
                         <div className="space-y-4">
-                          <div>
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-xl font-bold text-white">
-                                {selectedWordInfo.word.word}
-                              </span>
-                              <Badge
-                                variant="outline"
-                                className="text-xs border-gray-500 text-gray-300"
-                              >
-                                {selectedWordInfo.word.partOfSpeech}
-                              </Badge>
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="text-xl font-bold text-white">
+                                    {selectedWordInfo.word.word}
+                                  </span>
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs border-gray-500 text-gray-300"
+                                  >
+                                    {selectedWordInfo.word.pos}
+                                  </Badge>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                {isEditingWord ? (
+                                  <>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-white hover:text-green-200"
+                                      onClick={saveEditedWord}
+                                    >
+                                      <Check className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-white hover:text-red-200"
+                                      onClick={cancelWordEditing}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-white hover:text-indigo-200"
+                                    onClick={startWordEditing}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
                             </div>
-                            <p className="text-gray-300">
-                              {selectedWordInfo.word.meaning}
-                            </p>
+
+                            {isEditingWord ? (
+                              <div className="space-y-3">
+                                <Input
+                                  value={editingWordValues.meaning}
+                                  onChange={(event) =>
+                                    handleWordFieldChange(
+                                      "meaning",
+                                      event.target.value
+                                    )
+                                  }
+                                  placeholder="뜻을 입력하세요"
+                                  className="bg-gray-800 border-gray-600 text-white"
+                                />
+                                <Textarea
+                                  value={editingWordValues.others}
+                                  onChange={(event) =>
+                                    handleWordFieldChange(
+                                      "others",
+                                      event.target.value
+                                    )
+                                  }
+                                  placeholder="성조나 추가 정보를 입력하세요"
+                                  className="bg-gray-800 border-gray-600 text-white"
+                                  rows={4}
+                                />
+                              </div>
+                            ) : (
+                              <>
+                                <p className="text-gray-300">
+                                  {selectedWordInfo.word.meaning}
+                                </p>
+                                <p className="text-xs text-gray-200 whitespace-pre-line">
+                                  {selectedWordInfo.word.others || ""}
+                                </p>
+                              </>
+                            )}
                           </div>
 
                           <div className="pt-4 border-t border-gray-600">
