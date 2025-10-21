@@ -121,12 +121,13 @@ export default function CreateNotePage() {
     try {
       // 서버 API 시도, 실패 시 로컬 함수 사용
       let sentences: string[];
-      try {
-        sentences = await splitSentences(textContent);
-      } catch (serverError) {
-        console.warn("서버 API 실패, 로컬 분리 함수 사용:", serverError);
-        sentences = splitIntoSentencesLocal(textContent);
-      }
+      // try {
+      //   sentences = await splitSentences(textContent);
+      // } catch (serverError) {
+      //   console.warn("서버 API 실패, 로컬 분리 함수 사용:", serverError);
+      //   sentences = splitIntoSentencesLocal(textContent);
+      // }
+      sentences = splitIntoSentencesLocal(textContent);
       handleAnalyzeWithWords(sentences);
       // setExtractedSentences(sentences);
       // setShowTextSentenceSelector(true);
