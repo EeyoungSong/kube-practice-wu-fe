@@ -316,9 +316,9 @@ export default function ReviewComponent({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-indigo-500" />
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
           <h3 className="text-lg font-medium text-white mb-2">
             복습 데이터를 불러오는 중...
           </h3>
@@ -330,7 +330,7 @@ export default function ReviewComponent({
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md bg-gray-800 border-gray-800">
           <CardHeader className="text-center">
             <CardTitle className="text-red-400">오류 발생</CardTitle>
@@ -338,7 +338,7 @@ export default function ReviewComponent({
           </CardHeader>
           <CardContent className="text-center">
             <Link href="/">
-              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+              <Button className="bg-primary hover:bg-primary-hover text-white">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 홈으로 돌아가기
               </Button>
@@ -354,10 +354,10 @@ export default function ReviewComponent({
     const score = Math.round((knownCount / totalWords) * 100);
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-2xl bg-gray-800 border-gray-700">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-4">
               <Star className="w-8 h-8 text-white" />
             </div>
             <CardTitle className="text-2xl text-white mb-2">
@@ -428,7 +428,7 @@ export default function ReviewComponent({
               <div className="text-center">
                 <Button
                   onClick={handleFinish}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="bg-primary hover:bg-primary-hover text-white"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -455,7 +455,7 @@ export default function ReviewComponent({
   const progress = ((currentIndex + 1) / reviewWords.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -495,7 +495,7 @@ export default function ReviewComponent({
           <Card className="bg-gray-800 border-gray-800 mb-8">
             <CardHeader className="text-center pb-4">
               <div className="flex items-center justify-center gap-2 mb-4">
-                <Brain className="w-5 h-5 text-indigo-400" />
+                <Brain className="w-5 h-5 text-primary" />
                 <span className="text-sm text-gray-400">
                   이 단어를 알고 있나요?
                 </span>
@@ -530,7 +530,7 @@ export default function ReviewComponent({
               {showMeaning && (
                 <div className="p-4 bg-gray-700 rounded-lg">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <Eye className="w-4 h-4 text-indigo-400" />
+                    <Eye className="w-4 h-4 text-primary" />
                     <span className="text-sm text-gray-400">정답</span>
                   </div>
                   <p className="text-xl text-white mb-3">
@@ -574,7 +574,7 @@ export default function ReviewComponent({
                 <Button
                   onClick={handleNext}
                   size="lg"
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3"
+                  className="bg-primary hover:bg-primary-hover text-white px-8 py-3"
                 >
                   {currentIndex < reviewWords.length - 1
                     ? "다음 단어"

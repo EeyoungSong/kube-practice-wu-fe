@@ -146,7 +146,7 @@ export default function NoteDetailPage({ params }: PageProps) {
           ...acc,
           <span
             key={index}
-            className="text-indigo-400 font-bold rounded bg-indigo-900/30 px-1"
+            className="text-primary-foreground font-bold rounded bg-primary/30 px-1"
           >
             {targetWord}
           </span>,
@@ -184,7 +184,7 @@ export default function NoteDetailPage({ params }: PageProps) {
           return (
             <span
               key={index}
-              className="text-indigo-400 font-bold rounded bg-indigo-900/30 px-1"
+              className="text-primary-foreground font-bold rounded bg-primary/30 px-1"
             >
               {word}
             </span>
@@ -198,11 +198,11 @@ export default function NoteDetailPage({ params }: PageProps) {
   // wordbookId가 아직 로드되지 않았을 때
   if (!wordbookId) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
             <div className="text-center py-12">
-              <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <h3 className="text-lg font-medium text-white mb-2">
                 페이지를 로드하는 중...
               </h3>
@@ -216,11 +216,11 @@ export default function NoteDetailPage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
             <div className="text-center py-12">
-              <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <h3 className="text-lg font-medium text-white mb-2">
                 단어장을 불러오는 중...
               </h3>
@@ -234,7 +234,7 @@ export default function NoteDetailPage({ params }: PageProps) {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
             <div className="text-center py-12">
@@ -260,7 +260,7 @@ export default function NoteDetailPage({ params }: PageProps) {
 
   if (!wordbook) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
             <div className="text-center py-12">
@@ -300,9 +300,9 @@ export default function NoteDetailPage({ params }: PageProps) {
       : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-gray-700 bg-gray-900/80 backdrop-blur-sm">
+      <header className="border-b border-gray-700 bg-transparent backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -310,7 +310,7 @@ export default function NoteDetailPage({ params }: PageProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-white hover:text-indigo-400 hover:bg-transparent"
+                  className="text-white hover:text-primary-foreground hover:bg-transparent"
                 >
                   <ArrowLeft className="w-8 h-8 mr-2" />
                 </Button>
@@ -337,7 +337,7 @@ export default function NoteDetailPage({ params }: PageProps) {
             </div>
             <div className="flex gap-2">
               <Link href={`/review/${wordbookData.id}`}>
-                <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
+                <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary-hover hover:to-secondary-hover text-white">
                   <Play className="w-4 h-4 mr-2" />
                   복습하기
                 </Button>
@@ -422,7 +422,7 @@ export default function NoteDetailPage({ params }: PageProps) {
                 (wordData: WordWithSentences) => (
                   <Card
                     key={wordData.id}
-                    className="bg-gray-700/30 border-gray-700/30 cursor-pointer hover:border-indigo-500 transition-colors"
+                    className="bg-gray-700/30 border-gray-700/30 cursor-pointer hover:border-primary transition-colors"
                     onClick={() => handleWordClick(wordData)}
                   >
                     <CardContent className="p-6">
@@ -625,7 +625,7 @@ export default function NoteDetailPage({ params }: PageProps) {
                     .map((sentence: SentenceWithWordbook, index: number) => (
                       <div
                         key={sentence.id}
-                        className="bg-gray-700 p-4 rounded-lg border-l-4 border-indigo-500"
+                        className="bg-gray-700 p-4 rounded-lg border-l-4 border-primary"
                       >
                         <div className="space-y-3">
                           <p className="text-lg font-medium text-white leading-relaxed">
@@ -641,7 +641,7 @@ export default function NoteDetailPage({ params }: PageProps) {
                           <div className="flex items-center gap-2">
                             <Badge
                               variant="outline"
-                              className="border-indigo-400 text-indigo-300"
+                              className="border-primary-foreground text-primary-foreground"
                             >
                               {sentence.word_meaning_in_context}
                             </Badge>
@@ -662,7 +662,7 @@ export default function NoteDetailPage({ params }: PageProps) {
                                   if (sentence.id)
                                     toggleMemoExpanded(sentence.id);
                                 }}
-                                className="flex items-center gap-1 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+                                className="flex items-center gap-1 text-sm text-primary-foreground hover:text-primary-foreground transition-colors"
                               >
                                 {sentence.id &&
                                 expandedMemos.has(sentence.id) ? (

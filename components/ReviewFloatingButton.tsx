@@ -78,7 +78,7 @@ export default function ReviewFloatingButton() {
         <DropdownMenuTrigger asChild>
           <Button
             size="lg"
-            className="h-14 w-14 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 border-0"
+            className="h-14 w-14 rounded-full bg-gradient-to-r from-primary to-secondary hover:from-primary-hover hover:to-secondary-hover shadow-lg hover:shadow-xl transition-all duration-200 border-0"
           >
             <div className="relative">
               <BookOpen className="w-6 h-6 text-white" />
@@ -101,7 +101,7 @@ export default function ReviewFloatingButton() {
           <div className="max-h-64 overflow-y-auto">
             {categoriesLoading ? (
               <div className="px-3 py-4 text-center">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2 text-indigo-400" />
+                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2 text-primary" />
                 <span className="text-xs text-gray-400">
                   카테고리 로딩 중...
                 </span>
@@ -135,7 +135,7 @@ export default function ReviewFloatingButton() {
 
                   {/* Word Count Options (shown when expanded) */}
                   {expandedCategory === category.id && (
-                    <div className="bg-gray-800 border-l-2 border-indigo-500 ml-3 p-4">
+                    <div className="bg-gray-800 border-l-2 border-primary ml-3 p-4">
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-gray-400">
@@ -164,7 +164,7 @@ export default function ReviewFloatingButton() {
 
                         <Button
                           onClick={() => handleCategoryReview(category.id)}
-                          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white mt-3"
+                          className="w-full bg-primary hover:bg-primary-hover text-white mt-3"
                           size="sm"
                         >
                           <Play className="w-3 h-3 mr-2" />

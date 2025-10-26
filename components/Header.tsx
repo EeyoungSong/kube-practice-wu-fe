@@ -45,7 +45,7 @@ export default function Header({
     setSelectedLanguage(language);
   };
   return (
-    <header className="border-b border-gray-700 bg-gray-900/80 backdrop-blur-sm">
+    <header className="border-b border-gray-700 bg-transparent backdrop-blur-sm">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div
@@ -58,12 +58,12 @@ export default function Header({
                 alt="Star Icon"
                 width={32}
                 height={32}
-                className="text-indigo-400"
+                className="text-primary"
               />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-200 rounded-full animate-pulse" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold text-primary bg-clip-text">
                 단어의 우주
               </h1>
             </div>
@@ -71,7 +71,7 @@ export default function Header({
           <div className="flex flex-row items-center gap-2">
             {/* Language Selection in Header */}
             <div className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-indigo-400" />
+              <BookOpen className="w-5 h-5 text-primary" />
               <Select
                 value={selectedLanguage}
                 onValueChange={handleLanguageChange}
@@ -130,7 +130,7 @@ export default function Header({
                   </Button>
                 </Link>
                 <Link href="/auth/signup">
-                  <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
+                  <Button className="bg-primary hover:bg-primary-hover text-white">
                     회원가입
                   </Button>
                 </Link>

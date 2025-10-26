@@ -626,7 +626,7 @@ export default function ImageOCRSelector({
           <Button
             onClick={handleSaveToNote}
             disabled={getSelectedWordsCount() === 0}
-            className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+            className="flex-1 bg-gradient-to-r from-primary to-secondary hover:from-primary-hover hover:to-secondary-hover text-white"
           >
             단어장에 저장하기 ({getSelectedWordsCount()}개 단어)
           </Button>
@@ -772,7 +772,7 @@ export default function ImageOCRSelector({
         <Button
           onClick={handleConfirm}
           disabled={selectedWords.size === 0}
-          className="flex-1 bg-indigo-700 hover:bg-indigo-600 text-white"
+          className="flex-1 bg-primary-hover hover:bg-primary text-white"
         >
           선택된 문장 AI 분석하기 (
           {groupWordsIntoSentences(Array.from(selectedWords)).length}개 문장)

@@ -44,7 +44,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* 뒤로 가기 버튼 */}
         <div className="mb-6">
@@ -117,7 +117,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary-hover hover:to-secondary-hover text-white"
                 disabled={isSubmitting || isLoading}
               >
                 {isSubmitting || isLoading ? (
@@ -136,7 +136,7 @@ export default function LoginPage() {
                 아직 계정이 없으신가요?{" "}
                 <Link
                   href="/auth/signup"
-                  className="text-indigo-400 hover:text-indigo-300 font-medium"
+                  className="text-primary-foreground hover:text-primary font-medium"
                 >
                   회원가입
                 </Link>

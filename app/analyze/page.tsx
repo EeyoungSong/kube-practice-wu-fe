@@ -488,8 +488,8 @@ export default function AnalyzePage() {
                 <span
                   className={`cursor-pointer rounded transition-colors break-words ${
                     word.isSelected
-                      ? "bg-indigo-900/50 text-indigo-300 hover:bg-indigo-900/70"
-                      : "hover:bg-indigo-900/30 hover:text-indigo-300"
+                      ? "bg-primary/50 text-primary-foreground hover:bg-primary/70"
+                      : "hover:bg-primary/30 hover:text-primary-foreground"
                   }`}
                   onClick={() => handleWordClick(sentence.id, word.id)}
                 >
@@ -576,9 +576,9 @@ export default function AnalyzePage() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+      <div className="min-h-screen bg-background">
         {/* Header */}
-        <header className="border-b border-gray-700 bg-gray-900/80 backdrop-blur-sm">
+        <header className="border-b border-gray-700 bg-transparent backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -602,13 +602,13 @@ export default function AnalyzePage() {
               <div className="flex gap-2">
                 <Badge
                   variant="secondary"
-                  className="bg-blue-900 text-blue-200 border-blue-800"
+                  className="bg-secondary text-secondary-foreground"
                 >
                   {getAnalyzedSentencesCount()}/{sentences.length}개 문장 분석됨
                 </Badge>
                 <Badge
                   variant="secondary"
-                  className="bg-indigo-900 text-indigo-200 border-indigo-800"
+                  className="bg-primary text-primary-foreground"
                 >
                   {getSelectedWordsCount()}개 단어 선택됨
                 </Badge>
@@ -624,7 +624,7 @@ export default function AnalyzePage() {
               <div className="lg:col-span-2 space-y-6">
                 {sentences.map((sentence) => (
                   <div key={sentence.id} className="space-y-4">
-                    <Card className="border-2 border-gray-700 bg-gray-800 hover:border-indigo-500 transition-colors">
+                    <Card className="border-2 border-gray-700 bg-gray-800 hover:border-primary transition-colors">
                       <CardHeader>
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
@@ -639,15 +639,15 @@ export default function AnalyzePage() {
                                   analyzeSingleSentence(sentence.id)
                                 }
                                 size="sm"
-                                className="bg-indigo-600 hover:bg-indigo-700 ml-4"
+                                className="bg-primary hover:bg-primary-hover ml-4"
                               >
                                 분석하기
                               </Button>
                             )}
                             {sentence.isAnalyzing && (
                               <div className="flex items-center gap-2 ml-4">
-                                <div className="animate-spin w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full" />
-                                <span className="text-sm text-indigo-400">
+                                <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
+                                <span className="text-sm text-primary-foreground">
                                   분석 중...
                                 </span>
                               </div>
@@ -657,7 +657,7 @@ export default function AnalyzePage() {
                             <div className="space-y-2">
                               <button
                                 onClick={() => toggleTranslation(sentence.id)}
-                                className="flex items-center gap-1 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+                                className="flex items-center gap-1 text-sm text-primary-foreground hover:text-primary transition-colors"
                               >
                                 {sentence.isTranslationVisible ? (
                                   <>
@@ -685,7 +685,7 @@ export default function AnalyzePage() {
                     {/* 작은 화면에서 선택된 단어 정보를 문장 바로 아래 표시 */}
                     {selectedWordInfo &&
                       selectedWordInfo.sentenceId === sentence.id && (
-                        <Card className="bg-indigo-600/50 mt-4 lg:hidden">
+                        <Card className="bg-primary/50 mt-4 lg:hidden">
                           <CardHeader>
                             <h3 className="font-medium text-white flex items-center gap-2">
                               <BookOpen className="w-4 h-4" />
@@ -736,7 +736,7 @@ export default function AnalyzePage() {
                                         type="button"
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-white hover:text-indigo-200"
+                                        className="h-8 w-8 text-white hover:text-primary-foreground"
                                         onClick={startWordEditing}
                                       >
                                         <Pencil className="h-4 w-4" />
@@ -828,7 +828,7 @@ export default function AnalyzePage() {
                                         {wordContext.sentences.length}개)
                                       </h4>
                                       {isLoadingContext && (
-                                        <div className="animate-spin w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full" />
+                                        <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
                                       )}
                                     </div>
 
@@ -880,7 +880,7 @@ export default function AnalyzePage() {
                               {isLoadingContext && !wordContext && (
                                 <div className="pt-4 border-t border-gray-600">
                                   <div className="flex items-center gap-2 text-gray-400">
-                                    <div className="animate-spin w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full" />
+                                    <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
                                     <span className="text-sm">
                                       과거 맥락 로딩 중...
                                     </span>
@@ -900,7 +900,7 @@ export default function AnalyzePage() {
                     onClick={saveSelectedWords}
                     disabled={getSelectedWordsCount() === 0}
                     size="lg"
-                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-8 text-white"
+                    className="bg-gradient-to-r from-primary to-secondary hover:from-primary-hover hover:to-secondary-hover px-8 text-white"
                   >
                     <Star className="w-4 h-4 mr-2" />
                     단어장에 저장하기 ({getSelectedWordsCount()}개 단어)
@@ -963,7 +963,7 @@ export default function AnalyzePage() {
                                     type="button"
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 text-white hover:text-indigo-200"
+                                    className="h-8 w-8 text-white hover:text-primary-foreground"
                                     onClick={startWordEditing}
                                   >
                                     <Pencil className="h-4 w-4" />
