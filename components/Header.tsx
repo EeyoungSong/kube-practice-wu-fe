@@ -22,6 +22,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { languages } from "@/types/word";
 import { categoryService } from "@/services";
 import Image from "next/image";
+import { ThemeSelector } from "@/components/ThemeSelector";
 
 interface Language {
   value: string;
@@ -69,6 +70,9 @@ export default function Header({
             </div>
           </div>
           <div className="flex flex-row items-center gap-2">
+            {/* Theme Selector */}
+            <ThemeSelector />
+
             {/* Language Selection in Header */}
             <div className="flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-primary" />
