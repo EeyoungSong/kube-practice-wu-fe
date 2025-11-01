@@ -64,7 +64,6 @@ export default function CreateNotePage() {
   const [isOCRProcessing, setIsOCRProcessing] = useState(false);
   const [isTextProcessing, setIsTextProcessing] = useState(false);
   const [ocrProgress, setOcrProgress] = useState<OCRProgress | null>(null);
-  const [useClientOCR, setUseClientOCR] = useState(true); // 클라이언트 OCR 사용 여부
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const inputTypes = [
@@ -106,13 +105,7 @@ export default function CreateNotePage() {
     setOcrProgress(null);
 
     try {
-      if (useClientOCR) {
-        // 클라이언트 사이드 OCR 사용
-        await handleClientOCR(file);
-      } else {
-        // 기존 서버 API 사용
-        await handleServerOCR(file);
-      }
+      await handleClientOCR(file);
     } catch (error) {
       console.error("OCR 처리 중 오류:", error);
       alert(
@@ -433,24 +426,6 @@ export default function CreateNotePage() {
 
                           {type.value === "image" && (
                             <div className="space-y-4">
-                              {/* OCR 방식 선택 */}
-                              <div className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
-                                <div className="space-y-1">
-                                  <Label className="text-gray-300 text-sm font-medium">
-                                    클라이언트 OCR 사용
-                                  </Label>
-                                  <p className="text-xs text-gray-400">
-                                    {useClientOCR
-                                      ? "브라우저에서 직접 처리 (프라이버시 보호)"
-                                      : "서버에서 처리 (더 높은 정확도)"}
-                                  </p>
-                                </div>
-                                <Switch
-                                  checked={useClientOCR}
-                                  onCheckedChange={setUseClientOCR}
-                                />
-                              </div>
-
                               <div className="space-y-2">
                                 <Label className="text-gray-300">
                                   이미지 업로드
@@ -490,9 +465,7 @@ export default function CreateNotePage() {
                                         </div>
                                       )}
                                       <p className="text-xs text-gray-400 mt-1">
-                                        {useClientOCR
-                                          ? "브라우저에서 처리 중..."
-                                          : "서버에서 처리 중..."}
+                                        브라우저에서 처리 중...
                                       </p>
                                     </div>
                                   ) : uploadedImage ? (

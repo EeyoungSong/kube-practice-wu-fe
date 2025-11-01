@@ -59,7 +59,7 @@ class OCRService {
       // 진행상황 추적을 위한 로거 설정
       if (onProgress) {
         this.worker.setParameters({
-          logger: (m) => {
+          logger: (m: any) => {
             onProgress({
               status: m.status,
               progress: m.progress || 0,
