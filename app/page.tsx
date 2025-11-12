@@ -62,7 +62,7 @@ import {
 const GraphView = dynamic(() => import("@/components/GraphView"), {
   ssr: false,
   loading: () => (
-    <div className="flex min-h-[60vh] items-center justify-center text-indigo-200">
+    <div className="flex min-h-[60vh] items-center justify-center text-primary-foreground">
       별자리를 그리는 중...
     </div>
   ),
@@ -278,7 +278,7 @@ export default function NotesPage() {
   // 로딩 상태 처리 (언어 로딩 추가)
   if (categoriesLoading || wordbooksLoading || !isLoaded) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+      <div className="min-h-screen bg-background">
         <Header
           selectedLanguage={selectedLanguage}
           setSelectedLanguage={setSelectedLanguage}
@@ -287,8 +287,8 @@ export default function NotesPage() {
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
             <div className="text-center py-12">
-              <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <h3 className="text-lg font-medium text-white mb-2">
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <h3 className="text-lg font-medium text-primary-foreground mb-2">
                 데이터를 불러오는 중...
               </h3>
               <p className="text-gray-400">잠시만 기다려주세요.</p>
@@ -300,7 +300,7 @@ export default function NotesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+    <div className="min-h-screen bg-background">
       {/* // <div className="min-h-screen bg-yellow-100"> */}
       {/* Header */}
       <Header
@@ -324,7 +324,7 @@ export default function NotesPage() {
                     onClick={() => setViewMode("grid")}
                     className={`${
                       viewMode === "grid"
-                        ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                        ? "bg-primary text-white hover:bg-primary-hover"
                         : "text-gray-300 hover:bg-gray-800"
                     } rounded-none border-none w-10 h-10 flex items-center justify-center p-0`}
                   >
@@ -336,7 +336,7 @@ export default function NotesPage() {
                     onClick={() => setViewMode("timeline")}
                     className={`${
                       viewMode === "timeline"
-                        ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                        ? "bg-primary text-white hover:bg-primary-hover"
                         : "text-gray-300 hover:bg-gray-800"
                     } rounded-none border-none w-10 h-10 flex items-center justify-center p-0`}
                   >
@@ -348,7 +348,7 @@ export default function NotesPage() {
                     onClick={() => setViewMode("constellation")}
                     className={`${
                       viewMode === "constellation"
-                        ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                        ? "bg-primary text-white hover:bg-primary-hover"
                         : "text-gray-300 hover:bg-gray-800"
                     } rounded-none border-none w-10 h-10 flex items-center justify-center p-0`}
                   >
@@ -358,7 +358,7 @@ export default function NotesPage() {
 
                 {/* 새 단어장 만들기 버튼 */}
                 <Link href="/add">
-                  <Button className="bg-indigo-600 hover:bg-indigo-700 text-white m-4">
+                  <Button className="bg-primary hover:bg-primary-hover text-white m-4">
                     <Plus className="w-4 h-4 m-2" />
                     <span className="hidden sm:inline">새 단어장 만들기</span>
                     <span className="sm:hidden">새 단어장</span>
@@ -448,7 +448,7 @@ export default function NotesPage() {
                 <Link href={`/notes/${note.id}`} key={note.id}>
                   <Card
                     key={note.id}
-                    className="bg-gray-700/30 border-gray-700/30 hover:border-indigo-700 hover:shadow-lg"
+                    className="bg-gray-700/30 border-gray-700/30 hover:border-primary-hover hover:shadow-lg"
                   >
                     <CardHeader>
                       <div className="flex items-start justify-between">
@@ -526,7 +526,7 @@ export default function NotesPage() {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                           <Calendar className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -544,7 +544,7 @@ export default function NotesPage() {
                     <div className="space-y-3">
                       {timelineItem.createdWordbooks.map((note: Note) => (
                         <Link href={`/notes/${note.id}`} key={note.id}>
-                          <div className="rounded-lg p-4 border-l-4 border-indigo-600 hover:bg-gray-800 transition-colors cursor-pointer">
+                          <div className="rounded-lg p-4 border-l-4 border-primary hover:bg-gray-800 transition-colors cursor-pointer">
                             <div className="flex items-center justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
@@ -596,7 +596,7 @@ export default function NotesPage() {
                     단어장을 생성하여 학습 기록을 만들어보세요!
                   </p>
                   <Link href="/add">
-                    <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
+                    <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary-hover hover:to-secondary-hover text-white">
                       <Plus className="w-4 h-4 mr-2" />첫 번째 단어장 만들기
                     </Button>
                   </Link>
@@ -624,7 +624,7 @@ export default function NotesPage() {
                   새로운 단어장를 만들어 단어 학습을 시작해보세요!
                 </p>
                 <Link href="/add">
-                  <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
+                  <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary-hover hover:to-secondary-hover text-white">
                     <Plus className="w-4 h-4 mr-2" />첫 번째 단어장 만들기
                   </Button>
                 </Link>
@@ -738,7 +738,7 @@ export default function NotesPage() {
               </Button>
               <Button
                 type="submit"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                className="bg-primary hover:bg-primary-hover text-white"
                 disabled={isSavingEdit}
               >
                 {isSavingEdit ? "저장 중..." : "변경 사항 저장"}

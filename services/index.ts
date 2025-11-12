@@ -15,6 +15,7 @@ export {
 } from "./extraction.service";
 export { categoryService } from "./category.service";
 export { wordService } from "./word.service";
+export { ocrService } from "./ocr.service";
 
 // Create extractionService object for convenience
 export const extractionService = {

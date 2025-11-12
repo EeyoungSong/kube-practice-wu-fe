@@ -497,7 +497,7 @@ const GraphView: FC = () => {
         allEdgesLength: allEdges.length,
       });
 
-      const time = (allNodes.length + allEdges.length) * 20;
+      const time = (allNodes.length + allEdges.length) * 100;
       console.log("🪐 Time:", time);
 
       if (graphRef.current) {

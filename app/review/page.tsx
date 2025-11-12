@@ -22,9 +22,9 @@ function ReviewPageContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-indigo-500" />
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
           <h3 className="text-lg font-medium text-white mb-2">
             페이지를 준비하는 중...
           </h3>
@@ -36,7 +36,7 @@ function ReviewPageContent() {
 
   if (categoryId === null) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h3 className="text-lg font-medium text-red-400 mb-2">
             카테고리 ID가 필요합니다
@@ -60,9 +60,9 @@ export default function CategoryReviewPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black flex items-center justify-center">
+        <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-indigo-500" />
+            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
             <h3 className="text-lg font-medium text-white mb-2">
               페이지를 로딩하는 중...
             </h3>

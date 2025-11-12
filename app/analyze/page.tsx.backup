@@ -360,7 +360,7 @@ export default function AnalyzePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-gray-700 bg-gray-900/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
@@ -421,7 +421,7 @@ export default function AnalyzePage() {
                             <Button
                               onClick={() => analyzeSingleSentence(sentence.id)}
                               size="sm"
-                              className="bg-indigo-600 hover:bg-indigo-700 ml-4"
+                              className="bg-primary hover:bg-primary-hover ml-4"
                             >
                               분석하기
                             </Button>
@@ -467,7 +467,7 @@ export default function AnalyzePage() {
                   {/* 작은 화면에서 선택된 단어 정보를 문장 바로 아래 표시 */}
                   {selectedWordInfo &&
                     selectedWordInfo.sentenceId === sentence.id && (
-                      <Card className="bg-indigo-600/50 mt-4 lg:hidden">
+                      <Card className="bg-primary/50 mt-4 lg:hidden">
                         <CardHeader>
                           <h3 className="font-medium text-white flex items-center gap-2">
                             <BookOpen className="w-4 h-4" />
@@ -544,7 +544,7 @@ export default function AnalyzePage() {
                   onClick={saveSelectedWords}
                   disabled={getSelectedWordsCount() === 0}
                   size="lg"
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-8 text-white"
+                  className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary-hover hover:to-purple-700 px-8 text-white"
                 >
                   <Star className="w-4 h-4 mr-2" />
                   단어장에 저장하기 ({getSelectedWordsCount()}개 단어)

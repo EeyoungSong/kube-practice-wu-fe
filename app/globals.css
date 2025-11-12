@@ -14,73 +14,170 @@ body {
 
 @layer base {
   :root {
-    --background: 222 84% 5%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 238 94% 67%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    /* 기본 색상 (모든 테마에서 공통) */
+    --color-white: 0 0% 98%;
+    --color-black: 0 0% 9%;
+    --color-dark-bg: 222 84% 5%;
+    --color-card-bg: 0 0% 3.9%;
+    --color-muted: 0 0% 63.9%;
+    --color-border: 0 0% 14.9%;
+    --color-ring: 0 0% 83.1%;
+    --color-destructive-base: 0 62.8% 30.6%;
+
+    /* 기본 테마 (파란색) */
+    --color-primary-base: 238 94% 67%;
+    --color-primary-hover: 238 84% 67%;
+    --color-secondary-base: 0 0% 14.9%;
+    --color-accent-base: 238 94% 67%;
+
+    /* 시스템 색상 (색상 팔레트 기반) */
+    --background: var(--color-dark-bg);
+    --foreground: var(--color-white);
+    --card: var(--color-card-bg);
+    --card-foreground: var(--color-white);
+    --popover: var(--color-card-bg);
+    --popover-foreground: var(--color-white);
+
+    /* Primary 색상 세트 */
+    --primary: var(--color-primary-base);
+    --primary-foreground: var(--color-white);
+    --primary-hover: var(--color-primary-hover);
+
+    /* Secondary 색상 세트 */
+    --secondary: var(--color-secondary-base);
+    --secondary-foreground: var(--color-white);
+
+    /* 기타 색상 */
+    --muted: var(--color-secondary-base);
+    --muted-foreground: var(--color-muted);
+    --accent: var(--color-accent-base);
+    --accent-foreground: var(--color-white);
+    --destructive: var(--color-destructive-base);
+    --destructive-foreground: var(--color-white);
+    --border: var(--color-border);
+    --input: var(--color-border);
+    --ring: var(--color-ring);
+
+    /* 차트 색상 */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* 레이아웃 */
     --radius: 0.5rem;
+
+    /* 사이드바 색상 */
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary-foreground: var(--color-white);
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 238 94% 67%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    /* 다크 모드 색상 팔레트 오버라이드 */
+    --color-primary-base: 0 0% 98%;
+    --color-dark-bg: 0 0% 3.9%;
+    --color-card-bg: 0 0% 3.9%;
+
+    /* 시스템 색상 (다크 모드) */
+    --background: var(--color-dark-bg);
+    --foreground: var(--color-white);
+    --card: var(--color-card-bg);
+    --card-foreground: var(--color-white);
+    --popover: var(--color-card-bg);
+    --popover-foreground: var(--color-white);
+
+    /* Primary 색상 세트 (다크 모드) */
+    --primary: var(--color-primary-base);
+    --primary-foreground: var(--color-black);
+
+    /* Secondary 색상 세트 (다크 모드) */
+    --secondary: var(--color-secondary-base);
+    --secondary-foreground: var(--color-white);
+
+    /* 기타 색상 (다크 모드) */
+    --muted: var(--color-secondary-base);
+    --muted-foreground: var(--color-muted);
+    --accent: var(--color-accent-base);
+    --accent-foreground: var(--color-white);
+    --destructive: var(--color-destructive-base);
+    --destructive-foreground: var(--color-white);
+    --border: var(--color-border);
+    --input: var(--color-border);
+    --ring: var(--color-ring);
+
+    /* 차트 색상 (다크 모드에서 동일) */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* 사이드바 색상 (다크 모드) */
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary-foreground: var(--color-white);
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* 색상 테마 세트 */
+
+  /* 파란색 테마 (기본) */
+  [data-theme="blue"] {
+    --color-primary-base: 215 74.1% 53.1%;
+    --color-primary-hover: 215 64.1% 53.1%;
+    --color-accent-base: 215 74.1% 53.1%;
+  }
+
+  /* 민트색 테마 */
+  [data-theme="mint"] {
+    --color-primary-base: 173 69.2% 77.1%;
+    --color-primary-hover: 173 59.2% 77.1%;
+    --color-accent-base: 173 69.2% 77.1%;
+  }
+
+  /* 초록색 테마 */
+  [data-theme="green"] {
+    --color-primary-base: 142 54.3% 50.2%;
+    --color-primary-hover: 142 44.3% 50.2%;
+    --color-accent-base: 142 54.3% 50.2%;
+  }
+
+  /* 보라색 테마 */
+  [data-theme="purple"] {
+    --color-primary-base: 238 94% 67%;
+    --color-primary-hover: 238 84% 67%;
+    --color-accent-base: 238 94% 67%;
+  }
+
+  /* 핑크색 테마 */
+  [data-theme="pink"] {
+    --color-primary-base: 330 61.4% 72.5%;
+    --color-primary-hover: 330 51.4% 72.5%;
+    --color-accent-base: 330 61.4% 72.5%;
+  }
+
+  /* 주황색 테마 */
+  [data-theme="orange"] {
+    --color-primary-base: 25 83.7% 66.3%;
+    --color-primary-hover: 25 73.7% 66.3%;
+    --color-accent-base: 25 83.7% 66.3%;
+  }
+
+  /* 빨간색 테마 */
+  [data-theme="red"] {
+    --color-primary-base: 0 80.1% 66.5%;
+    --color-primary-hover: 0 70.1% 66.5%;
+    --color-accent-base: 0 80.1% 66.5%;
   }
 }
 

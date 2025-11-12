@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Camera,
   FileText,
@@ -33,6 +34,7 @@ import Header from "@/components/Header";
 import { useCategories } from "@/hooks/use-categories";
 import { useLanguage } from "@/hooks/use-language";
 import { extractTextFromImage, splitSentences } from "@/services";
+import { ocrService, OCRProgress } from "@/services/ocr.service";
 import { languages } from "@/types/word";
 
 // 백업용 로컬 문장 분리 함수
@@ -61,6 +63,7 @@ export default function CreateNotePage() {
   const [selectedWords, setSelectedWords] = useState<string[]>([]);
   const [isOCRProcessing, setIsOCRProcessing] = useState(false);
   const [isTextProcessing, setIsTextProcessing] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState<OCRProgress | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const inputTypes = [
@@ -84,6 +87,13 @@ export default function CreateNotePage() {
     error: categoriesError,
   } = useCategories(selectedLanguage);
 
+  // 컴포넌트 언마운트 시 OCR 워커 정리
+  useEffect(() => {
+    return () => {
+      ocrService.terminate().catch(console.error);
+    };
+  }, []);
+
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -92,15 +102,10 @@ export default function CreateNotePage() {
 
     setUploadedImage(file);
     setIsOCRProcessing(true);
+    setOcrProgress(null);
 
     try {
-      // API 함수를 사용하여 OCR 요청
-      const data = await extractTextFromImage(file);
-
-      handleAnalyzeWithWords(data.sentences);
-      // setExtractedSentences(data.sentences);
-      // setShowTextSentenceSelector(true);
-      // setIsOCRProcessing(false);
+      await handleClientOCR(file);
     } catch (error) {
       console.error("OCR 처리 중 오류:", error);
       alert(
@@ -110,7 +115,60 @@ export default function CreateNotePage() {
       );
       setIsOCRProcessing(false);
       setUploadedImage(null);
+      setOcrProgress(null);
     }
+  };
+
+  const handleClientOCR = async (file: File) => {
+    try {
+      // OCR 언어 설정 (선택된 언어에 따라)
+      const ocrLanguage = getOCRLanguage(selectedLanguage);
+
+      // OCR 워커 초기화
+      setOcrProgress({ status: "OCR 초기화 중...", progress: 0 });
+      await ocrService.initialize(ocrLanguage);
+
+      // 텍스트 추출
+      const result = await ocrService.extractText(file, (progress) => {
+        setOcrProgress(progress);
+      });
+
+      // 결과 처리
+      if (result.sentences.length > 0) {
+        handleAnalyzeWithWords(result.sentences);
+      } else {
+        throw new Error("추출된 텍스트가 없습니다.");
+      }
+    } finally {
+      setIsOCRProcessing(false);
+      setOcrProgress(null);
+    }
+  };
+
+  const handleServerOCR = async (file: File) => {
+    try {
+      const data = await extractTextFromImage(file);
+      handleAnalyzeWithWords(data.sentences);
+    } finally {
+      setIsOCRProcessing(false);
+    }
+  };
+
+  // 언어에 따른 OCR 언어 코드 매핑
+  const getOCRLanguage = (language: string): string => {
+    const languageMap: { [key: string]: string } = {
+      en: "eng",
+      ko: "kor",
+      ja: "jpn",
+      zh: "chi_sim",
+      fr: "fra",
+      de: "deu",
+      es: "spa",
+      ru: "rus",
+    };
+
+    // 기본적으로 영어+한국어 조합 사용
+    return languageMap[language] ? `${languageMap[language]}+eng` : "eng+kor";
   };
 
   const handleTextAnalyze = async () => {
@@ -214,9 +272,9 @@ export default function CreateNotePage() {
   // 언어 로딩이 완료될 때까지 로딩 화면 표시
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-white">언어 설정을 불러오는 중...</p>
         </div>
       </div>
@@ -224,7 +282,7 @@ export default function CreateNotePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <Header
         selectedLanguage={selectedLanguage}
@@ -247,7 +305,7 @@ export default function CreateNotePage() {
             <Card className="mb-8 bg-transparent border-gray-700">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-white">
-                  <Camera className="w-5 h-5 text-purple-400" />
+                  <Camera className="w-5 h-5 text-primary" />
                   입력 방식 선택
                 </CardTitle>
               </CardHeader>
@@ -265,8 +323,8 @@ export default function CreateNotePage() {
                       <div
                         className={`p-4 cursor-pointer transition-all ${
                           isSelected
-                            ? "border-purple-500 bg-gray-700/50"
-                            : "border-gray-600 hover:border-purple-400 hover:bg-gray-700/50"
+                            ? "border-primary bg-gray-700/50"
+                            : "border-gray-600 hover:border-primary hover:bg-gray-700/50"
                         }`}
                         onClick={() => handleInputTypeSelect(type.value)}
                       >
@@ -274,13 +332,15 @@ export default function CreateNotePage() {
                           <div className="flex items-start gap-3">
                             <Icon
                               className={`w-5 h-5 mt-0.5 ${
-                                isSelected ? "text-purple-400" : "text-gray-400"
+                                isSelected ? "text-primary" : "text-gray-400"
                               }`}
                             />
                             <div>
                               <div
                                 className={`font-medium ${
-                                  isSelected ? "text-purple-200" : "text-white"
+                                  isSelected
+                                    ? "text-primary-foreground"
+                                    : "text-white"
                                 }`}
                               >
                                 {type.label}
@@ -292,7 +352,7 @@ export default function CreateNotePage() {
                           </div>
                           <ChevronIcon
                             className={`w-5 h-5 ${
-                              isSelected ? "text-purple-400" : "text-gray-500"
+                              isSelected ? "text-primary" : "text-gray-500"
                             }`}
                           />
                         </div>
@@ -365,56 +425,79 @@ export default function CreateNotePage() {
                           )}
 
                           {type.value === "image" && (
-                            <div className="space-y-2">
-                              <Label className="text-gray-300">
-                                이미지 업로드
-                              </Label>
-                              <div
-                                className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-indigo-400 transition-colors"
-                                onClick={() =>
-                                  !isOCRProcessing &&
-                                  fileInputRef.current?.click()
-                                }
-                              >
-                                {isOCRProcessing ? (
-                                  <div>
-                                    <Loader2 className="w-8 h-8 text-indigo-400 mx-auto mb-2 animate-spin" />
-                                    <p className="text-sm font-medium text-indigo-300">
-                                      이미지에서 텍스트를 추출하고 있습니다...
-                                    </p>
-                                    <p className="text-xs text-gray-400 mt-1">
-                                      잠시만 기다려주세요
-                                    </p>
-                                  </div>
-                                ) : uploadedImage ? (
-                                  <div>
-                                    <Upload className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                                    <p className="text-sm font-medium text-green-300">
-                                      {uploadedImage.name}
-                                    </p>
-                                    <p className="text-xs text-gray-400 mt-1">
-                                      클릭하여 다른 이미지 선택
-                                    </p>
-                                  </div>
-                                ) : (
-                                  <div>
-                                    <Camera className="w-8 h-8 text-gray-500 mx-auto mb-2" />
-                                    <p className="text-sm text-gray-300">
-                                      클릭하여 이미지를 업로드하세요
-                                    </p>
-                                    <p className="text-xs text-gray-400 mt-1">
-                                      JPG, PNG, GIF 파일 지원
-                                    </p>
-                                  </div>
-                                )}
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <Label className="text-gray-300">
+                                  이미지 업로드
+                                </Label>
+                                <div
+                                  className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-primary-hover transition-colors"
+                                  onClick={() =>
+                                    !isOCRProcessing &&
+                                    fileInputRef.current?.click()
+                                  }
+                                >
+                                  {isOCRProcessing ? (
+                                    <div>
+                                      <Loader2 className="w-8 h-8 text-primary mx-auto mb-2 animate-spin" />
+                                      <p className="text-sm font-medium text-primary-foreground">
+                                        {ocrProgress?.status ||
+                                          "이미지에서 텍스트를 추출하고 있습니다..."}
+                                      </p>
+                                      {ocrProgress && (
+                                        <div className="mt-2">
+                                          <div className="w-full bg-gray-700 rounded-full h-2">
+                                            <div
+                                              className="bg-primary h-2 rounded-full transition-all duration-300"
+                                              style={{
+                                                width: `${
+                                                  ocrProgress.progress * 100
+                                                }%`,
+                                              }}
+                                            />
+                                          </div>
+                                          <p className="text-xs text-gray-400 mt-1">
+                                            {Math.round(
+                                              ocrProgress.progress * 100
+                                            )}
+                                            % 완료
+                                          </p>
+                                        </div>
+                                      )}
+                                      <p className="text-xs text-gray-400 mt-1">
+                                        브라우저에서 처리 중...
+                                      </p>
+                                    </div>
+                                  ) : uploadedImage ? (
+                                    <div>
+                                      <Upload className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                                      <p className="text-sm font-medium text-green-300">
+                                        {uploadedImage.name}
+                                      </p>
+                                      <p className="text-xs text-gray-400 mt-1">
+                                        클릭하여 다른 이미지 선택
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    <div>
+                                      <Camera className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+                                      <p className="text-sm text-gray-300">
+                                        클릭하여 이미지를 업로드하세요
+                                      </p>
+                                      <p className="text-xs text-gray-400 mt-1">
+                                        JPG, PNG, GIF 파일 지원
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                                <input
+                                  ref={fileInputRef}
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleImageUpload}
+                                  className="hidden"
+                                />
                               </div>
-                              <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageUpload}
-                                className="hidden"
-                              />
                             </div>
                           )}
 
@@ -430,7 +513,7 @@ export default function CreateNotePage() {
                               isOCRProcessing ||
                               isTextProcessing
                             }
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                            className="w-full bg-primary hover:bg-primary-hover text-white"
                             size="lg"
                           >
                             {(type.value === "image" && isOCRProcessing) ||
