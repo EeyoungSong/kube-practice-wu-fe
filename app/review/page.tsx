@@ -39,7 +39,7 @@ function ReviewPageContent() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h3 className="text-lg font-medium text-red-400 mb-2">
-            카테고리 ID가 필요합니다
+            카테고리 ID가 필요합니다!!
           </h3>
           <p className="text-gray-400">올바른 URL로 접근해주세요.</p>
         </div>
