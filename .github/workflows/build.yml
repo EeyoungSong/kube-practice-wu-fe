@@ -72,7 +72,7 @@ jobs:
             git add .
             git commit -m "Update image tag to ${{ github.sha }}"
             git push
-            echo "✅ Pushed updated deployment.yaml to Infra repo"`
+            echo "✅ Pushed updated deployment.yaml to Infra repo"
           else
             echo "ℹ️ No changes to commit"
           fi
