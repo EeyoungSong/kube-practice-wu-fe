@@ -6,16 +6,10 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # 의존성 파일 복사 (캐시 최적화)
-COPY package.json package-lock.json* pnpm-lock.yaml* ./
+COPY package.json package-lock.json* ./
 
-# 패키지 매니저에 따라 의존성 설치
-# pnpm 우선, 없으면 npm 사용
-RUN if [ -f "pnpm-lock.yaml" ]; then \
-      corepack enable && corepack prepare pnpm@latest --activate && \
-      pnpm install --frozen-lockfile; \
-    else \
-      npm ci; \
-    fi
+# npm 패키지 설치
+RUN npm ci
 
 # 소스 코드 복사
 COPY . .
@@ -52,4 +46,3 @@ ENV NODE_ENV=production
 
 # Next.js 서버 시작
 CMD ["node", "server.js"]
-
