@@ -29,9 +29,15 @@ RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
 # Next.js standalone 출력 복사
-COPY --from=builder /app/public ./public
+# standalone 폴더의 내용을 루트로 복사 (server.js가 루트에 위치)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nextjs /app/.next/static ./.next/static
+
+# static 파일 복사 (CSS, JS 등 정적 파일 포함)
+# standalone 안에 .next/static이 포함되어 있을 수 있지만, 명시적으로 복사하여 확실히 함
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# public 폴더 복사 (이미지, 아이콘 등 정적 자산)
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # nextjs 사용자로 전환
 USER nextjs
