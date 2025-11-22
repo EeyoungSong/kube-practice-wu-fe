@@ -2,7 +2,7 @@ import { ApiOptions } from "@/types/common";
 
 // TODO: 환경변수 설정 필요
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://4.230.112.41/api/v1";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://4.230.112.41/wu-be/api/v1";
 
 export class APIError extends Error {
   status?: number;
